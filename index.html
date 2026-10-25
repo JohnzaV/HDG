@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#131a20">
+  <meta name="description" content="Osobní radarový trénink odhadu headingů. Nezávisle nastavitelná růžice, krok cílů a tolerance zásahu.">
+  <title>Heading Lab — radarový trénink</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script defer src="./engine.js"></script>
+  <script defer src="./app.js"></script>
+</head>
+<body>
+  <header class="app-header">
+    <a class="brand" href="./" aria-label="Heading Lab — úvod">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13"/><path d="M16 2v6M30 16h-6M16 30v-6M2 16h6M16 16l8-8"/><rect x="13" y="13" width="6" height="6"/></svg>
+      <span>HEADING<span class="brand-light"> / LAB</span><small>RADAROVÝ TRÉNINK</small></span>
+    </a>
+    <div class="header-right"><span class="utc"><span id="utc">00:00:00</span> UTC</span><button class="icon-button" id="help-button" aria-label="Jak hrát" title="Jak hrát">?</button></div>
+  </header>
+
+  <main class="workspace">
+    <section class="radar-column" aria-label="Radar a průběžné výsledky">
+      <div class="metrics" aria-label="Statistiky cvičení">
+        <div class="metric"><span>ZÁSAHY</span><strong id="hits">0 <em>/ 0</em></strong></div>
+        <div class="metric"><span>ÚSPĚŠNOST</span><strong id="accuracy">—<small>%</small></strong></div>
+        <div class="metric"><span>PRŮM. ODCHYLKA</span><strong id="mean-error">—<small>°</small></strong></div>
+        <div class="metric"><span>PRŮM. ČAS</span><strong id="mean-time">—<small>s</small></strong></div>
+      </div>
+
+      <div class="radar-panel">
+        <div class="radar-toolbar"><div class="scope-title"><span class="status-dot"></span> SECTOR <b>TRAINING</b><span class="toolbar-divider"></span><span>NORTH UP</span></div><div class="radar-actions"><span id="phase-badge">PŘIPRAVENO</span><button id="pause-button" class="small-button" disabled>Pauza</button></div></div>
+        <div class="time-track"><div id="time-fill"></div></div>
+        <div class="scope" id="scope">
+          <div class="scope-note">HDG TRAINING<span>BEZ VĚTRU</span></div>
+          <svg id="radar" viewBox="0 0 900 760" role="img" aria-label="Radarový obraz. Letadlo uprostřed a cílový waypoint.">
+            <defs>
+              <pattern id="radar-grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M50 0H0V50" fill="none" stroke="#26333d" stroke-width=".6"/></pattern>
+            </defs>
+            <rect width="900" height="760" fill="url(#radar-grid)" opacity=".4"/>
+            <g id="range-rings" fill="none" stroke="#34414a" stroke-width="1" opacity=".45"><circle cx="450" cy="380" r="125"/><circle cx="450" cy="380" r="250"/></g>
+            <g id="rose"></g>
+            <g id="solution"></g>
+            <g id="waypoint"></g>
+            <g id="aircraft"></g>
+          </svg>
+          <div class="scope-legend" id="scope-legend" hidden><span><i class="correct-line"></i>Správný heading</span><span id="user-legend"><i class="user-line"></i>Tvůj heading</span></div>
+          <div class="pause-overlay" id="pause-overlay" hidden><span class="pause-symbol">Ⅱ</span><h2>Chvilka pauzy.</h2><p>Čas stojí. Pokračuj, až budeš chtít.</p><button class="primary" id="resume-button">Pokračovat v tréninku</button></div>
+        </div>
+        <div class="radar-footer"><span><i class="tiny-square"></i> <b id="config-rose">RŮŽICE 90°</b></span><span id="config-step">CÍLE PO 15°</span><span id="config-tolerance">TOLERANCE ±5°</span><span class="radar-footer-right">SIM / 01</span></div>
+      </div>
+
+      <div class="recent-bar"><span>POSLEDNÍ CÍLE</span><div id="recent-answers"><span class="muted">Tvoje odpovědi se objeví tady.</span></div><button class="text-button" id="history-button">Historie ↗</button></div>
+      <p class="keyboard-note"><kbd>0–9</kbd> heading <span>·</span> <kbd>Enter</kbd> potvrdit / další <span>·</span> <kbd>P</kbd> pauza</p>
+    </section>
+
+    <aside class="control-column" aria-label="Ovládání a nastavení">
+      <section class="command-panel">
+        <div class="panel-eyebrow"><span id="round-label">TVÉ CVIČENÍ</span><span class="live-clock" id="round-clock">00.0 s</span></div>
+        <h1 id="task-title">Každý stupeň se počítá.</h1>
+        <p class="task-copy" id="task-copy">Odhadni heading z letadla k waypointu. Nastav si podmínky a začni.</p>
+        <div id="answer-area" hidden>
+          <label class="input-label" for="heading-input">ZADEJ HEADING</label>
+          <div class="heading-field"><span>HDG</span><input id="heading-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" spellcheck="false" placeholder="–––" aria-describedby="input-error" aria-label="Heading od 000 do 360 stupňů"><span class="degree">°</span></div>
+          <div class="input-error" id="input-error" aria-live="polite"></div>
+          <div class="keypad" id="keypad" aria-label="Číselná klávesnice">
+            <button data-key="1">1</button><button data-key="2">2</button><button data-key="3">3</button><button data-key="4">4</button><button data-key="5">5</button><button data-key="6">6</button><button data-key="7">7</button><button data-key="8">8</button><button data-key="9">9</button><button data-key="clear" class="key-special" aria-label="Vymazat heading">CLR</button><button data-key="0">0</button><button data-key="backspace" class="key-special" aria-label="Smazat poslední číslici">⌫</button>
+          </div>
+        </div>
+        <div class="feedback" id="feedback" role="status" hidden></div>
+        <button class="primary main-action" id="main-action">Zahájit trénink <span>↗</span></button>
+        <button class="text-button end-action" id="end-button" hidden>Ukončit cvičení</button>
+        <p class="start-note" id="start-note">Bez limitu. Vlastním tempem.</p>
+      </section>
+
+      <section class="settings-panel">
+        <div class="settings-heading"><h2>Nastavení cvičení</h2><span id="settings-status">VLASTNÍ</span></div>
+        <fieldset id="settings-fields">
+          <legend class="sr-only">Nastavení pro další cvičení</legend>
+          <div class="setting"><div class="setting-label">Růžice <span>Vizuální nápověda</span></div><div class="segments" role="group" aria-label="Obtížnost růžice"><button data-setting="rose" data-value="30" aria-pressed="false">Easy<small>po 30°</small></button><button data-setting="rose" data-value="90" aria-pressed="true">Medium<small>po 90°</small></button><button data-setting="rose" data-value="0" aria-pressed="false">Hard<small>bez růžice</small></button></div></div>
+          <div class="setting"><div class="setting-label">Krok cílů <span>Nezávislý na růžici</span></div><div class="segments" role="group" aria-label="Jemnost cílů"><button data-setting="step" data-value="30" aria-pressed="false">Easy<small>30°</small></button><button data-setting="step" data-value="15" aria-pressed="true">Medium<small>15°</small></button><button data-setting="step" data-value="5" aria-pressed="false">Hard<small>5°</small></button></div></div>
+          <div class="setting tolerance-setting"><label class="setting-label" for="tolerance">Tolerance zásahu <output id="tolerance-output" for="tolerance">±5°</output></label><input id="tolerance" type="range" min="0" max="15" step="1" value="5"><div class="range-labels"><span>Přesně · 0°</span><span>±15°</span></div></div>
+          <div class="setting"><div class="setting-label">Režim <span>Rozbor vždy bez limitu</span></div><div class="segments mode-segments" role="group" aria-label="Herní režim"><button data-setting="mode" data-value="practice" aria-pressed="true">Volný trénink</button><button data-setting="mode" data-value="timed" aria-pressed="false">Test na čas</button></div><div id="duration-setting" hidden><label for="duration">Čas na odpovídání</label><select id="duration"><option value="60">60 sekund</option><option value="120" selected>120 sekund</option><option value="180">180 sekund</option></select></div></div>
+        </fieldset>
+        <p class="settings-footnote" id="settings-note">Růžici a krok cílů můžeš libovolně kombinovat.</p>
+      </section>
+    </aside>
+  </main>
+  <footer class="app-footer"><span>HEADING LAB <b>01</b></span><span>Odhadni. Zadej. Zkontroluj.</span><span>OSOBNÍ TRÉNINK</span></footer>
+
+  <dialog id="help-dialog" class="modal"><div class="modal-heading"><span class="panel-eyebrow">BRIEFING</span><button class="icon-button close-dialog" aria-label="Zavřít nápovědu">×</button></div><h2>Odhad headingu.<br>V radarovém prostředí.</h2><p>Letadlo je vždy uprostřed, sever je nahoře. Tvým úkolem je určit heading od letadla k zelenému waypointu. Počítáme s bezvětřím: heading se shoduje se směrem k bodu.</p><ol><li>Nastav si zvlášť <b>růžici</b>, <b>krok cílů</b> a <b>toleranci</b>.</li><li>Zadej kurz <b>000–360°</b> a stiskni <b>Enter</b>. Sever můžeš zadat jako 000 i 360.</li><li>Porovnej zelenou spojnici s červeným směrem své odpovědi. Dalším Enterem pokračuj.</li></ol><p>V testu na čas ubíhá limit jen při odpovídání. Během rozboru, pauzy a po přepnutí do jiné karty se zastaví. Nezodpovězený cíl při vypršení času je chyba.</p><div class="help-colors"><span class="cyan">□ letadlo a jeho aktuální vektor</span><span class="green">△ cílový waypoint</span></div><p class="muted small-copy">Waypointy a letová data jsou cvičné. Vektor letadla znázorňuje jeho současný směr; hledáš nový heading k waypointu.</p></dialog>
+  <dialog id="results-dialog" class="modal results-modal"><div class="modal-heading"><span class="panel-eyebrow" id="results-eyebrow">DEBRIEFING</span><button class="icon-button close-dialog" aria-label="Zavřít výsledky">×</button></div><h2 id="results-title">Hotovo pro dnešek.</h2><div id="results-content"></div></dialog>
+</body>
+</html>
