@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#131a20">
+  <meta name="description" content="Osobní radarový trénink odhadu headingů. Nezávisle nastavitelná růžice, krok cílů a tolerance zásahu.">
+  <title>Heading Lab — radarový trénink</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMxMzFhMjAiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNiNGRjODkiIHN0cm9rZS13aWR0aD0iMi41Ij48Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSIyMyIvPjxwYXRoIGQ9Ik0zMiA4djEwTTU2IDMySDQ2TTMyIDU2VjQ2TTggMzJoMTBNMzIgMzJsMTUtMTUiLz48cmVjdCB4PSIyNyIgeT0iMjciIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgZmlsbD0iIzEzMWEyMCIvPjwvZz48L3N2Zz4K" type="image/svg+xml">
+  <style>
+@charset "UTF-8";
+:root{color-scheme:dark;--bg:#11171d;--panel:#1a232c;--panel-raised:#202c36;--radar:#19252e;--border:#303e48;--muted:#8d9da9;--text:#e4eaf0;--green:#b5db8b;--cyan:#95d8e0;--red:#fb8f91;--mono:"SFMono-Regular",Consolas,"Liberation Mono",monospace;--sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px}button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:default;opacity:.38}button,a,input,select{touch-action:manipulation}button{color:inherit}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}button{transition:background .15s,border-color .15s}button:hover:not(:disabled){filter:brightness(1.12)}[hidden]{display:none!important}.app-header{height:90px;max-width:1560px;padding:0 44px;margin:auto;display:flex;align-items:center;justify-content:space-between}.brand{display:flex;gap:13px;align-items:center;text-decoration:none;color:var(--text);font-size:19px;font-weight:700;letter-spacing:1.8px}.brand>svg{width:33px;height:33px;stroke:var(--green);fill:none;stroke-width:1.3}.brand-light{font-weight:400;color:var(--muted)}.brand small{display:block;margin-top:5px;font-family:var(--mono);font-size:9px;letter-spacing:2.5px;color:var(--muted);font-weight:400}.header-right{display:flex;align-items:center;gap:26px}.utc{font:11px var(--mono);color:var(--muted);letter-spacing:.8px}.utc span{color:#d6e0e6}.icon-button{display:grid;place-items:center;background:transparent;border:1px solid var(--border);border-radius:50%;width:30px;height:30px;font-size:14px;color:var(--muted)}.workspace{display:grid;grid-template-columns:minmax(0,1fr) 332px;gap:24px;max-width:1560px;margin:auto;padding:6px 44px 0;align-items:start}.metrics{display:grid;grid-template-columns:repeat(4,1fr);margin:0 0 21px;padding:3px 0 0}.metric{padding-left:25px;border-left:1px solid var(--border)}.metric:first-child{padding-left:0;border:0}.metric>span{font:10px var(--mono);letter-spacing:1.2px;color:var(--muted);display:block;margin-bottom:10px}.metric strong{font:29px var(--mono);letter-spacing:-1px;font-weight:400}.metric strong em{font-size:16px;color:var(--muted);font-style:normal}.metric small{font-size:14px;color:var(--muted);margin-left:5px}.radar-panel{border:1px solid var(--border);border-radius:5px;overflow:hidden;background:var(--radar)}.radar-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:42px;padding:7px 17px;background:#202c35;font:10px var(--mono);letter-spacing:.5px;color:#9fafba}.scope-title{display:flex;align-items:center;gap:8px}.scope-title b{color:#dce6ec;font-weight:400}.toolbar-divider{height:12px;width:1px;background:var(--border);margin:0 3px}.status-dot{width:5px;height:5px;background:var(--green);display:inline-block;border-radius:50%;margin-right:3px}.radar-actions{display:flex;align-items:center;gap:14px}#phase-badge{font-size:9px;color:var(--green)}.small-button{background:#2c3a44;border:1px solid #45535c;padding:4px 9px;border-radius:3px;font-size:10px;letter-spacing:0}.time-track{height:2px;background:#293840}.time-track>div{height:100%;background:var(--green);width:0;transition:width .1s linear}.time-track>div.warning{background:var(--red)}.scope{position:relative;aspect-ratio:900/760;max-height:calc(100vh - 305px);min-height:410px;overflow:hidden;background:var(--radar)}#radar{display:block;width:100%;height:100%}.scope-note{position:absolute;left:17px;top:17px;font:9px var(--mono);letter-spacing:1px;color:#a7b4bd;z-index:1}.scope-note span{display:block;color:#738691;margin-top:7px;font-size:8px}.scope-legend{position:absolute;bottom:17px;left:18px;display:flex;gap:20px;color:#b6c4cc;font:10px var(--mono)}.scope-legend span{display:flex;align-items:center;gap:7px}.scope-legend i{width:18px;display:inline-block}.correct-line{border-top:2px solid var(--green)}.user-line{border-top:2px dashed var(--red)}.radar-footer{min-height:35px;background:#202c35;display:flex;align-items:center;gap:22px;padding:8px 16px;color:#91a4af;font:9px var(--mono);letter-spacing:.3px}.radar-footer b{font-weight:400}.radar-footer-right{margin-left:auto;color:#697e89}.tiny-square{width:5px;height:5px;display:inline-block;background:#9bbd84;margin-right:5px}.recent-bar{display:flex;gap:14px;align-items:center;min-height:55px;border-bottom:1px solid #27333c;padding:9px 0;font:9px var(--mono);color:var(--muted);letter-spacing:.7px}.recent-bar>span{white-space:nowrap}.recent-bar>.text-button{margin-left:auto;flex-shrink:0;font-family:var(--sans);letter-spacing:0;font-size:11px}#recent-answers{display:flex;gap:6px;flex-wrap:wrap;align-items:center;min-width:0}.answer-chip{border:1px solid #3c5947;color:var(--green);padding:5px 6px;border-radius:3px;font-size:10px;letter-spacing:0}.answer-chip.miss{border-color:#654749;color:var(--red)}#recent-answers>.muted{font-size:10px;letter-spacing:0}.text-button{background:none;border:0;color:#a5b8c4;padding:4px 0}.keyboard-note{display:flex;align-items:center;justify-content:center;gap:8px;font:10px var(--mono);color:#8396a3;margin:16px 0}.keyboard-note>span{color:#4b5e6b;margin:0 4px}kbd{font:9px var(--mono);border:1px solid #394a55;border-bottom-width:2px;border-radius:3px;padding:3px 5px;color:#b6c3cb}.control-column{padding-top:0}.command-panel{background:var(--panel);border:1px solid var(--border);border-radius:5px;padding:22px}.panel-eyebrow{font:10px var(--mono);letter-spacing:1.2px;color:var(--muted);display:flex;justify-content:space-between;gap:10px;align-items:center}.live-clock{font-size:11px;color:#b5c7d1;letter-spacing:0}.command-panel h1{font-size:25px;font-weight:500;line-height:1.24;letter-spacing:-.6px;margin:22px 0 12px;max-width:240px}.task-copy{color:#9eadb8;font-size:13px;line-height:1.65;margin:0 0 19px}.task-copy b{color:var(--green);font-family:var(--mono);font-weight:500}.input-label{font:9px var(--mono);letter-spacing:1px;color:var(--muted);display:block;margin:17px 0 9px}.heading-field{display:flex;align-items:center;border:1px solid #536776;background:#121e27;border-radius:3px;min-height:77px;padding:7px 13px;color:#8198a8}.heading-field:focus-within{border-color:var(--cyan);box-shadow:0 0 0 1px #95d8e01a}.heading-field>span:first-child{font:11px var(--mono);letter-spacing:1px}.heading-field input{width:100%;min-width:0;appearance:none;background:transparent;border:0;color:var(--text);font:45px var(--mono);letter-spacing:5px;text-align:right;padding:0 8px 0 2px;outline:none}.heading-field input:focus-visible{outline:none}.heading-field input::placeholder{color:#506574;opacity:1}.degree{font:26px var(--mono);align-self:flex-start;margin-top:9px}.input-error{font-size:11px;color:var(--red);min-height:21px;padding-top:4px}.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:14px}.keypad button{height:40px;background:#25333e;border:1px solid #3b4c59;border-radius:3px;font:16px var(--mono);color:#d3e0e9}.keypad button:active{background:#3c5261}.keypad .key-special{color:#91a8b7;font-size:11px}.primary{border:1px solid var(--green);border-radius:3px;background:var(--green);color:#182416;font-size:12px;font-weight:650;min-height:43px;padding:11px 14px}.main-action{display:flex;width:100%;justify-content:space-between;align-items:center;gap:8px}.main-action span{font-size:18px;line-height:16px;font-weight:400}.start-note{text-align:center;color:#8092a0;font-size:11px;margin:12px 0 0}.end-action{display:block;margin:12px auto 0;font-size:11px;color:#91a3b0}.settings-panel{margin-top:18px;border:1px solid var(--border);border-radius:5px;background:#151e26;padding:20px}.settings-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:23px}.settings-heading h2{font-size:13px;font-weight:500;margin:0}.settings-heading>span{font:8px var(--mono);color:var(--muted);border:1px solid var(--border);padding:4px 5px;letter-spacing:.6px}fieldset{min-width:0;border:0;margin:0;padding:0}fieldset:disabled{opacity:.5}.setting{margin-bottom:21px}.setting:last-child{margin-bottom:0}.setting-label{display:flex;align-items:center;justify-content:space-between;gap:5px;font-size:12px;font-weight:500;margin-bottom:9px}.setting-label>span{font-size:10px;font-weight:400;color:var(--muted)}.segments{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.segments button{background:#202c35;border:1px solid #364651;border-radius:3px;padding:10px 3px;font-size:11px;color:#a0b1bd;font-weight:500}.segments button small{display:block;font:9px var(--mono);font-weight:400;margin-top:6px;letter-spacing:-.1px;white-space:nowrap}.segments button[aria-pressed=true]{background:#2a3d37;border-color:#88a475;color:#c4e2a8}.mode-segments{grid-template-columns:repeat(2,1fr)}.mode-segments button{padding:10px 4px;font-size:10px}.setting-label output{font:12px var(--mono);color:var(--green)}input[type=range]{accent-color:var(--green);width:100%;height:16px;margin:5px 0;cursor:pointer}.range-labels{display:flex;justify-content:space-between;font:9px var(--mono);color:var(--muted)}.settings-footnote{font-size:10px;line-height:1.6;color:#889ba8;margin:19px 0 0;border-top:1px solid var(--border);padding-top:13px}#duration-setting{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:10px;color:var(--muted)}select{border:1px solid #40515d;border-radius:3px;background:#202c35;color:var(--text);font-size:11px;padding:5px}.app-footer{max-width:1560px;margin:20px auto 0;padding:19px 44px 25px;display:flex;justify-content:space-between;font:9px var(--mono);letter-spacing:1px;color:#677e8d}.app-footer b{font-weight:400;color:#9aafb9;margin-left:7px}.app-footer>span:nth-child(2){font:11px var(--sans);letter-spacing:0}.feedback{background:#22372e;border:1px solid #456143;border-radius:3px;padding:14px;margin:18px 0 15px}.feedback.miss{background:#342a2e;border-color:#6c484e}.feedback-title{color:var(--green);display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:500}.feedback.miss .feedback-title{color:var(--red)}.feedback-values{display:flex;gap:28px;margin-top:14px}.feedback-values span{color:#adbdb9;font:9px var(--mono);display:block}.feedback-values strong{font:24px var(--mono);display:block;color:#d7e6dc;font-weight:400;margin-top:5px}.feedback-values .wrong{color:var(--red)}.feedback-description{font-size:11px;line-height:1.5;color:#abbcaf;margin:12px 0 0}.feedback.miss .feedback-description{color:#c7b4b8}.pause-overlay{position:absolute;inset:0;background:#14212af2;backdrop-filter:blur(7px);z-index:3;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px}.pause-overlay h2{font-size:24px;font-weight:400;margin:18px 0 0}.pause-overlay p{font-size:12px;color:var(--muted);margin:10px 0 23px}.pause-symbol{font:30px var(--mono);color:var(--green)}.muted{color:var(--muted)}.green{color:var(--green)}.cyan{color:var(--cyan)}.small-copy{font-size:11px!important}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.modal{color:var(--text);background:#1b2731;border:1px solid #4d606c;border-radius:6px;max-width:570px;width:calc(100% - 32px);padding:27px 30px;max-height:88vh;box-shadow:0 20px 100px #0005}.modal::backdrop{background:#071017bd;backdrop-filter:blur(4px)}.modal-heading{display:flex;align-items:center;justify-content:space-between}.modal h2{font-size:29px;font-weight:500;letter-spacing:-.7px;line-height:1.25;margin:20px 0}.modal p,.modal li{font-size:13px;line-height:1.8;color:#aebfc9}.modal b{color:#dfe8ee;font-weight:500}.modal ol{padding-left:21px}.modal li{padding-left:4px;margin-bottom:7px}.help-colors{display:flex;gap:15px;flex-wrap:wrap;font:10px var(--mono);padding:10px 0}.result-metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:21px 0}.result-metric{border:1px solid var(--border);border-radius:4px;padding:17px}.result-metric>span{display:block;font:9px var(--mono);color:var(--muted);letter-spacing:.5px}.result-metric strong{display:block;font:28px var(--mono);margin-top:9px;font-weight:400}.result-metrics small{font-size:13px;color:var(--muted)}.results-config{font:10px var(--mono);color:#a0b5bf;line-height:1.8;margin-top:16px}.table-wrap{max-height:220px;overflow:auto;margin:20px 0}.result-table{width:100%;border-collapse:collapse;text-align:left;font:11px var(--mono)}.result-table th{position:sticky;top:0;background:#1b2731;font-weight:400;color:var(--muted);font-size:9px}.result-table td,.result-table th{padding:9px 5px;border-bottom:1px solid var(--border)}.result-table td:last-child,.result-table th:last-child{text-align:right}.result-table .hit{color:var(--green)}.result-table .miss{color:var(--red)}.results-modal .primary{width:100%;margin-top:5px}.history-row{border:1px solid var(--border);padding:16px;margin:11px 0;border-radius:4px}.history-row>div{display:flex;justify-content:space-between;gap:10px}.history-row strong{font:17px var(--mono);font-weight:400;color:var(--green)}.history-row p{font-size:10px;line-height:1.6;margin:8px 0 0}.history-row time{font:10px var(--mono);color:var(--muted)}
+@media(min-width:1500px){.workspace{grid-template-columns:minmax(0,1fr) 350px;gap:30px}.command-panel{padding:25px}.keypad button{height:43px}.scope{max-height:760px;min-height:450px}.settings-panel{padding:22px}}
+@media(max-width:1100px){.app-header{padding:0 25px;height:78px}.workspace{padding:5px 25px 0;gap:18px;grid-template-columns:minmax(0,1fr) 306px}.command-panel{padding:18px}.settings-panel{padding:17px}.metric{padding-left:14px}.metric>span{font-size:8px;letter-spacing:.5px}.metric strong{font-size:25px}.radar-toolbar{padding:8px 11px}.scope-title{gap:5px;font-size:8px}.radar-actions{gap:7px}.radar-footer{gap:12px;font-size:8px;padding:9px}.radar-footer-right{display:none}.scope{min-height:420px;max-height:none;aspect-ratio:1}.keyboard-note{gap:5px;font-size:9px;flex-wrap:wrap}.recent-bar{flex-wrap:wrap;gap:8px}.recent-bar>span{font-size:8px}.app-footer{padding:18px 25px}.scope-legend{gap:14px;font-size:9px}.metric strong em{font-size:13px}}
+@media(max-width:780px){.workspace{grid-template-columns:1fr;padding:3px 17px 0;gap:17px}.app-header{height:76px;padding:0 18px}.brand{font-size:16px;letter-spacing:1px;gap:10px}.brand small{font-size:8px;letter-spacing:2px}.brand>svg{width:29px;height:29px}.utc{font-size:9px}.header-right{gap:14px}.metrics{margin-bottom:16px}.metric>span{font-size:8px}.metric strong{font-size:24px}.metric small{font-size:11px;margin-left:3px}.scope{min-height:0;aspect-ratio:900/760}.radar-footer{gap:15px}.scope-note{top:12px;left:12px;font-size:8px}.scope-note span{font-size:7px}.radar-toolbar{min-height:38px}.keyboard-note{display:none}.control-column{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:15px}.settings-panel{margin-top:0;padding:18px}.command-panel{padding:19px}.command-panel h1{font-size:23px;margin-top:17px}.setting-label{font-size:11px}.setting-label>span{font-size:9px}.segments button{font-size:10px}.app-footer>span:last-child{display:none}.app-footer{margin-top:8px;padding:19px 18px}.recent-bar{min-height:48px}.scope-legend{bottom:12px;left:12px}}
+@media(max-width:560px){.workspace{padding:3px 12px 0}.app-header{padding:0 15px;height:73px}.utc{display:none}.metrics{margin:0 2px 16px}.metric{padding-left:11px}.metric>span{font-size:7px;letter-spacing:.2px;white-space:nowrap;margin-bottom:8px}.metric strong{font-size:22px}.metric strong em{font-size:12px}.metric small{font-size:10px}.scope-title{gap:4px}.scope-title .toolbar-divider,.scope-title>span:last-child{display:none}.scope-note{font-size:7px;letter-spacing:.5px}.scope-note span{font-size:6px}.radar-toolbar{min-height:36px;padding:7px 10px}.radar-actions{font-size:8px;gap:8px}.small-button{font-size:9px;padding:4px 7px}.radar-footer{font-size:7px;gap:12px;padding:8px 10px}.control-column{display:block}.settings-panel{margin-top:15px;padding:21px}.command-panel{padding:22px}.command-panel h1{max-width:none;font-size:24px;margin:18px 0 9px}.task-copy{margin-bottom:15px}.heading-field{min-height:70px}.heading-field input{font-size:43px;letter-spacing:7px}.keypad button{height:43px}.keypad{gap:6px}.setting-label{font-size:12px}.setting-label>span{font-size:10px}.segments button{font-size:12px;padding:12px 4px}.segments button small{font-size:10px}.mode-segments button{font-size:11px}.scope-legend{font-size:7px;gap:12px;bottom:10px}.scope-legend i{width:14px}.scope-legend span{gap:5px}.feedback-values{gap:45px}.app-footer{font-size:8px;padding:17px 15px;letter-spacing:.5px}.app-footer>span:nth-child(2){font-size:10px}.modal{padding:22px}.modal h2{font-size:25px}.result-table{font-size:10px}.result-table td,.result-table th{padding:9px 3px}.recent-bar{gap:8px}.answer-chip{padding:4px;font-size:9px}.recent-bar>span{font-size:7px}#recent-answers{gap:4px}.recent-bar .text-button{font-size:10px}#recent-answers>.muted{font-size:9px}.recent-bar>span{margin-right:0}.pause-overlay h2{font-size:21px}.pause-overlay p{font-size:10px}}
+@media(max-width:560px){#rose text{font-size:25px}#waypoint text{font-size:25px}#aircraft text{font-size:23px}#aircraft text:nth-last-child(2){font-size:20px}#aircraft text:last-child{font-size:17px}}
+.rose-numbers-toggle{display:flex;align-items:center;justify-content:space-between;margin-top:13px;color:var(--muted);font-size:11px;cursor:pointer}.switch-control{position:relative;display:inline-block;width:32px;height:18px;flex-shrink:0}.switch-control input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;margin:0;z-index:1}.switch-track{display:block;width:100%;height:100%;border:1px solid #52636e;border-radius:12px;background:#293640}.switch-track:after{content:"";position:absolute;top:4px;left:4px;width:10px;height:10px;border-radius:50%;background:#a1b1bd;transition:transform .15s}.switch-control input:checked+.switch-track{background:#3b5740;border-color:var(--green)}.switch-control input:checked+.switch-track:after{transform:translateX(14px);background:var(--green)}.switch-control input:focus-visible+.switch-track{outline:2px solid var(--cyan);outline-offset:4px}.rose-numbers-toggle:has(input:disabled){cursor:default}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+</style>
+</head>
+<body>
+  <header class="app-header">
+    <a class="brand" href="" aria-label="Heading Lab — úvod">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13"/><path d="M16 2v6M30 16h-6M16 30v-6M2 16h6M16 16l8-8"/><rect x="13" y="13" width="6" height="6"/></svg>
+      <span>HEADING<span class="brand-light"> / LAB</span><small>RADAROVÝ TRÉNINK</small></span>
+    </a>
+    <div class="header-right"><span class="utc"><span id="utc">00:00:00</span> UTC</span><button class="icon-button" id="help-button" aria-label="Jak hrát" title="Jak hrát">?</button></div>
+  </header>
+
+  <main class="workspace">
+    <section class="radar-column" aria-label="Radar a průběžné výsledky">
+      <div class="metrics" aria-label="Statistiky cvičení">
+        <div class="metric"><span>ZÁSAHY</span><strong id="hits">0 <em>/ 0</em></strong></div>
+        <div class="metric"><span>ÚSPĚŠNOST</span><strong id="accuracy">—<small>%</small></strong></div>
+        <div class="metric"><span>PRŮM. ODCHYLKA</span><strong id="mean-error">—<small>°</small></strong></div>
+        <div class="metric"><span>PRŮM. ČAS</span><strong id="mean-time">—<small>s</small></strong></div>
+      </div>
+
+      <div class="radar-panel">
+        <div class="radar-toolbar"><div class="scope-title"><span class="status-dot"></span> SECTOR <b>TRAINING</b><span class="toolbar-divider"></span><span>NORTH UP</span></div><div class="radar-actions"><span id="phase-badge">PŘIPRAVENO</span><button id="pause-button" class="small-button" disabled>Pauza</button></div></div>
+        <div class="time-track"><div id="time-fill"></div></div>
+        <div class="scope" id="scope">
+          <div class="scope-note">HDG TRAINING<span>BEZ VĚTRU</span></div>
+          <svg id="radar" viewBox="0 0 900 760" role="img" aria-label="Radarový obraz. Letadlo uprostřed a cílový waypoint.">
+            <defs>
+              <pattern id="radar-grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M50 0H0V50" fill="none" stroke="#26333d" stroke-width=".6"/></pattern>
+            </defs>
+            <rect width="900" height="760" fill="url(#radar-grid)" opacity=".4"/>
+            <g id="range-rings" fill="none" stroke="#34414a" stroke-width="1" opacity=".45"><circle cx="450" cy="380" r="125"/><circle cx="450" cy="380" r="250"/></g>
+            <g id="rose"></g>
+            <g id="solution"></g>
+            <g id="waypoint"></g>
+            <g id="aircraft"></g>
+          </svg>
+          <div class="scope-legend" id="scope-legend" hidden><span><i class="correct-line"></i>Správný heading</span><span id="user-legend"><i class="user-line"></i>Tvůj heading</span></div>
+          <div class="pause-overlay" id="pause-overlay" hidden><span class="pause-symbol">Ⅱ</span><h2>Chvilka pauzy.</h2><p>Čas stojí. Pokračuj, až budeš chtít.</p><button class="primary" id="resume-button">Pokračovat v tréninku</button></div>
+        </div>
+        <div class="radar-footer"><span><i class="tiny-square"></i> <b id="config-rose">RŮŽICE 90°</b></span><span id="config-step">CÍLE PO 15°</span><span id="config-tolerance">TOLERANCE ±5°</span><span class="radar-footer-right">SIM / 01</span></div>
+      </div>
+
+      <div class="recent-bar"><span>POSLEDNÍ CÍLE</span><div id="recent-answers"><span class="muted">Tvoje odpovědi se objeví tady.</span></div><button class="text-button" id="history-button">Historie ↗</button></div>
+      <p class="keyboard-note"><kbd>0–9</kbd> heading <span>·</span> <kbd>Enter</kbd> potvrdit / další <span>·</span> <kbd>P</kbd> pauza</p>
+    </section>
+
+    <aside class="control-column" aria-label="Ovládání a nastavení">
+      <section class="command-panel">
+        <div class="panel-eyebrow"><span id="round-label">TVÉ CVIČENÍ</span><span class="live-clock" id="round-clock">00.0 s</span></div>
+        <h1 id="task-title">Každý stupeň se počítá.</h1>
+        <p class="task-copy" id="task-copy">Odhadni heading z letadla k waypointu. Nastav si podmínky a začni.</p>
+        <div id="answer-area" hidden>
+          <label class="input-label" for="heading-input">ZADEJ HEADING</label>
+          <div class="heading-field"><span>HDG</span><input id="heading-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" spellcheck="false" placeholder="–––" aria-describedby="input-error" aria-label="Heading od 000 do 360 stupňů"><span class="degree">°</span></div>
+          <div class="input-error" id="input-error" aria-live="polite"></div>
+          <div class="keypad" id="keypad" aria-label="Číselná klávesnice">
+            <button data-key="1">1</button><button data-key="2">2</button><button data-key="3">3</button><button data-key="4">4</button><button data-key="5">5</button><button data-key="6">6</button><button data-key="7">7</button><button data-key="8">8</button><button data-key="9">9</button><button data-key="clear" class="key-special" aria-label="Vymazat heading">CLR</button><button data-key="0">0</button><button data-key="backspace" class="key-special" aria-label="Smazat poslední číslici">⌫</button>
+          </div>
+        </div>
+        <div class="feedback" id="feedback" role="status" hidden></div>
+        <button class="primary main-action" id="main-action">Zahájit trénink <span>↗</span></button>
+        <button class="text-button end-action" id="end-button" hidden>Ukončit cvičení</button>
+        <p class="start-note" id="start-note">Bez limitu. Vlastním tempem.</p>
+      </section>
+
+      <section class="settings-panel">
+        <div class="settings-heading"><h2>Nastavení cvičení</h2><span id="settings-status">VLASTNÍ</span></div>
+        <fieldset id="settings-fields">
+          <legend class="sr-only">Nastavení pro další cvičení</legend>
+          <div class="setting"><div class="setting-label">Růžice <span>Vizuální nápověda</span></div><div class="segments" role="group" aria-label="Obtížnost růžice"><button data-setting="rose" data-value="30" aria-pressed="false">Easy<small>po 30°</small></button><button data-setting="rose" data-value="90" aria-pressed="true">Medium<small>po 90°</small></button><button data-setting="rose" data-value="0" aria-pressed="false">Hard<small>bez růžice</small></button></div><label class="rose-numbers-toggle"><span>Čísla stupňů</span><span class="switch-control"><input id="rose-numbers" type="checkbox" aria-label="Zobrazit čísla stupňů"><span class="switch-track" aria-hidden="true"></span></span></label></div>
+          <div class="setting"><div class="setting-label">Krok cílů <span>Nezávislý na růžici</span></div><div class="segments" role="group" aria-label="Jemnost cílů"><button data-setting="step" data-value="30" aria-pressed="false">Easy<small>30°</small></button><button data-setting="step" data-value="15" aria-pressed="true">Medium<small>15°</small></button><button data-setting="step" data-value="5" aria-pressed="false">Hard<small>5°</small></button></div></div>
+          <div class="setting tolerance-setting"><label class="setting-label" for="tolerance">Tolerance zásahu <output id="tolerance-output" for="tolerance">±5°</output></label><input id="tolerance" type="range" min="0" max="15" step="1" value="5"><div class="range-labels"><span>Přesně · 0°</span><span>±15°</span></div></div>
+          <div class="setting"><div class="setting-label">Režim <span>Rozbor vždy bez limitu</span></div><div class="segments mode-segments" role="group" aria-label="Herní režim"><button data-setting="mode" data-value="practice" aria-pressed="true">Volný trénink</button><button data-setting="mode" data-value="timed" aria-pressed="false">Test na čas</button></div><div id="duration-setting" hidden><label for="duration">Čas na odpovídání</label><select id="duration"><option value="60">60 sekund</option><option value="120" selected>120 sekund</option><option value="180">180 sekund</option></select></div></div>
+        </fieldset>
+        <p class="settings-footnote" id="settings-note">Růžici a krok cílů můžeš libovolně kombinovat.</p>
+      </section>
+    </aside>
+  </main>
+  <footer class="app-footer"><span>HEADING LAB <b>1.2</b></span><span>Odhadni. Zadej. Zkontroluj.</span><span>OSOBNÍ TRÉNINK</span></footer>
+
+  <dialog id="help-dialog" class="modal"><div class="modal-heading"><span class="panel-eyebrow">BRIEFING</span><button class="icon-button close-dialog" aria-label="Zavřít nápovědu">×</button></div><h2>Odhad headingu.<br>V radarovém prostředí.</h2><p>Letadlo je vždy uprostřed, sever je nahoře. Tvým úkolem je určit heading od letadla k zelenému waypointu. Počítáme s bezvětřím: heading se shoduje se směrem k bodu.</p><ol><li>Nastav si zvlášť <b>růžici</b>, <b>krok cílů</b> a <b>toleranci</b>.</li><li>Zadej kurz <b>000–360°</b> a stiskni <b>Enter</b>. Sever můžeš zadat jako 000 i 360.</li><li>Porovnej zelenou spojnici s červeným směrem své odpovědi. Dalším Enterem pokračuj.</li></ol><p>V testu na čas ubíhá limit jen při odpovídání. Během rozboru, pauzy a po přepnutí do jiné karty se zastaví. Nezodpovězený cíl při vypršení času je chyba.</p><div class="help-colors"><span class="cyan">□ letadlo a jeho aktuální vektor</span><span class="green">△ cílový waypoint</span></div><p class="muted small-copy">Waypointy a letová data jsou cvičné. Vektor letadla znázorňuje jeho současný směr; hledáš nový heading k waypointu.</p></dialog>
+  <dialog id="results-dialog" class="modal results-modal"><div class="modal-heading"><span class="panel-eyebrow" id="results-eyebrow">DEBRIEFING</span><button class="icon-button close-dialog" aria-label="Zavřít výsledky">×</button></div><h2 id="results-title">Hotovo pro dnešek.</h2><div id="results-content"></div></dialog>
+<script>
+/* Heading math shared by the app and its Node tests. No browser dependencies. */
+(function (root) {
+  'use strict';
+  const STEPS = [5, 15, 30];
+  function normalize(value) { return ((value % 360) + 360) % 360; }
+  function format(value) { return String(normalize(value) || 360).padStart(3, '0'); }
+  function difference(answer, target) { return normalize(answer - target + 180) - 180; }
+  function parse(value) {
+    const raw = String(value).trim();
+    if (!/^\d{1,3}$/.test(raw)) return null;
+    const number = Number(raw);
+    return number <= 360 ? normalize(number) : null;
+  }
+  function pickHeading(step, previous, rng = Math.random) {
+    if (!STEPS.includes(step)) throw new RangeError('Unsupported target step');
+    const values = Array.from({length: 360 / step}, (_, index) => index * step)
+      .filter(value => value !== previous);
+    return values[Math.min(values.length - 1, Math.max(0, Math.floor(rng() * values.length)))];
+  }
+  function point(heading, radius, center = {x: 450, y: 380}) {
+    const angle = normalize(heading) * Math.PI / 180;
+    return {x: center.x + radius * Math.sin(angle), y: center.y - radius * Math.cos(angle)};
+  }
+  function assess(answer, target, tolerance) {
+    if (answer === null) return {answer: null, target, delta: null, error: null, hit: false};
+    const delta = difference(answer, target);
+    return {answer, target, delta, error: Math.abs(delta), hit: Math.abs(delta) <= tolerance};
+  }
+  function summarize(records) {
+    const answered = records.filter(record => record.answer !== null);
+    const total = records.length;
+    const hits = records.filter(record => record.hit).length;
+    return {
+      total, hits,
+      accuracy: total ? Math.round(hits / total * 100) : null,
+      meanError: answered.length ? answered.reduce((sum, record) => sum + record.error, 0) / answered.length : null,
+      meanTime: answered.length ? answered.reduce((sum, record) => sum + record.seconds, 0) / answered.length : null
+    };
+  }
+  const api = {normalize, format, difference, parse, pickHeading, point, assess, summarize};
+  root.HeadingMath = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+</script>
+<script>
+/* Heading Lab: buildless, browser-local training. */
+(() => {
+  'use strict';
+  const M = window.HeadingMath;
+  const $ = id => document.getElementById(id);
+  const NS = 'http://www.w3.org/2000/svg';
+  const COLORS = {green: '#b5db8b', cyan: '#95d8e0', red: '#fb8f91', muted: '#9bb0bd'};
+  const CENTER = {x: 450, y: 380};
+  const DEFAULT = {rose: 90, showDegrees: false, step: 15, tolerance: 5, mode: 'practice', duration: 120};
+  const STORAGE_SETTINGS = 'heading-lab.settings.v1';
+  const STORAGE_HISTORY = 'heading-lab.history.v1';
+  const FIXES = ['LUMEN', 'VEXOR', 'NOKTA', 'RAVIK', 'MAVEN', 'TOLIX', 'NERVO', 'BEXAL', 'ROMIK', 'KAVEN', 'VILOR', 'DOMEX'];
+  const AIRCRAFT = [
+    {call: 'CSA42A', type: 'A320', level: 180, speed: 240},
+    {call: 'BAW73K', type: 'A319', level: 210, speed: 280},
+    {call: 'DLH8TX', type: 'A320', level: 200, speed: 260},
+    {call: 'LOT6CP', type: 'E190', level: 160, speed: 230},
+    {call: 'TVS21M', type: 'B738', level: 190, speed: 250}
+  ];
+  let storageAvailable = true;
+  function readStorage(key, fallback) {
+    try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
+    catch { storageAvailable = false; return fallback; }
+  }
+  function writeStorage(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); }
+    catch { storageAvailable = false; }
+  }
+  function validConfig(raw, fallbackShowDegrees = DEFAULT.showDegrees) {
+    const source = raw && typeof raw === 'object' ? raw : {};
+    return {
+      rose: [0, 30, 90].includes(source.rose) ? source.rose : DEFAULT.rose,
+      showDegrees: typeof source.showDegrees === 'boolean' ? source.showDegrees : fallbackShowDegrees,
+      step: [5, 15, 30].includes(source.step) ? source.step : DEFAULT.step,
+      tolerance: Number.isInteger(source.tolerance) && source.tolerance >= 0 && source.tolerance <= 15 ? source.tolerance : DEFAULT.tolerance,
+      mode: source.mode === 'timed' ? 'timed' : 'practice',
+      duration: [60, 120, 180].includes(source.duration) ? source.duration : DEFAULT.duration
+    };
+  }
+  function validHistory(raw) {
+    if (!Array.isArray(raw)) return [];
+    return raw.filter(item => item && typeof item.date === 'string' && Number.isFinite(Date.parse(item.date)) && Array.isArray(item.records))
+      .slice(0, 20).map(item => ({
+        date: new Date(item.date).toISOString(), config: validConfig(item.config, true),
+        records: item.records.filter(r => r && Number.isInteger(r.target) && r.target >= 0 && r.target < 360 &&
+          (r.answer === null || (Number.isInteger(r.answer) && r.answer >= 0 && r.answer < 360)) && Number.isFinite(r.seconds) && r.seconds >= 0)
+          .slice(0, 10000).map(r => ({...M.assess(r.answer, r.target, validConfig(item.config).tolerance), seconds: r.seconds}))
+      })).filter(item => item.records.length);
+  }
+  let settings = validConfig(readStorage(STORAGE_SETTINGS, DEFAULT));
+  let history = validHistory(readStorage(STORAGE_HISTORY, []));
+  let activeConfig = {...settings};
+  let phase = 'idle';
+  let paused = false;
+  let records = [];
+  let target = 315;
+  let radius = 245;
+  let fixIndex = 0;
+  let aircraft = {...AIRCRAFT[0], heading: 90};
+  let questionSeconds = 0;
+  let remaining = settings.duration;
+  let lastTick = performance.now();
+  let expired = false;
+  let latestResult = null;
+  let sessionDate = null;
+
+  const isActive = () => phase === 'aim' || phase === 'review';
+  const currentConfig = () => isActive() ? activeConfig : settings;
+  const decimal = value => value === null ? '—' : value.toLocaleString('cs-CZ', {minimumFractionDigits: 1, maximumFractionDigits: 1});
+  const countText = value => `${value} ${value === 1 ? 'cíl' : value >= 2 && value <= 4 ? 'cíle' : 'cílů'}`;
+  const escapeText = text => String(text).replace(/[&<>"']/g, character => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[character]));
+
+  function svgElement(name, attributes, text) {
+    const element = document.createElementNS(NS, name);
+    Object.entries(attributes || {}).forEach(([key, value]) => element.setAttribute(key, String(value)));
+    if (text !== undefined) element.textContent = text;
+    return element;
+  }
+  function line(parent, from, to, attributes = {}) {
+    parent.append(svgElement('line', {x1: from.x, y1: from.y, x2: to.x, y2: to.y, ...attributes}));
+  }
+  function label(parent, position, text, attributes = {}) {
+    parent.append(svgElement('text', {x: position.x, y: position.y, fill: COLORS.muted, 'font-family': 'Consolas, monospace', 'font-size': 19, 'text-anchor': 'middle', 'dominant-baseline': 'middle', ...attributes}, text));
+  }
+  function renderRose() {
+    const parent = $('rose');
+    parent.replaceChildren();
+    const step = currentConfig().rose;
+    if (!step) return;
+    parent.append(svgElement('circle', {cx: CENTER.x, cy: CENTER.y, r: 299, fill: 'none', stroke: '#70838f', 'stroke-width': 1, opacity: .4}));
+    for (let heading = 0; heading < 360; heading += step) {
+      const cardinal = heading % 90 === 0;
+      line(parent, M.point(heading, cardinal ? 284 : 290), M.point(heading, 303), {stroke: cardinal ? '#b6c7d0' : '#8296a3', 'stroke-width': cardinal ? 1.6 : 1.2});
+      if (currentConfig().showDegrees) label(parent, M.point(heading, 331), M.format(heading), {fill: cardinal ? '#bbcbd4' : '#8da3b0', 'font-size': cardinal ? 21 : 18});
+    }
+  }
+  function renderAircraft() {
+    const parent = $('aircraft');
+    parent.replaceChildren();
+    const p = M.point(target, radius);
+    const side = p.x >= CENTER.x ? -1 : 1;
+    const vertical = p.y >= CENTER.y ? -1 : 1;
+    const anchor = side === 1 ? 'start' : 'end';
+    const labelX = CENTER.x + side * 54;
+    const labelY = CENTER.y + vertical * 58;
+    for (const r of [20, 34, 48]) {
+      const ghost = M.point(aircraft.heading + 180, r);
+      parent.append(svgElement('circle', {cx: ghost.x, cy: ghost.y, r: 2.2, fill: COLORS.cyan, opacity: 1 - r / 65}));
+    }
+    line(parent, CENTER, M.point(aircraft.heading, 48), {stroke: COLORS.cyan, 'stroke-width': 1.8, opacity: .85});
+    parent.append(svgElement('path', {d: `M450 380 L${450 + side * 30} ${380 + vertical * 35} H${labelX}`, fill: 'none', stroke: COLORS.cyan, 'stroke-width': 1.1, opacity: .7}));
+    parent.append(svgElement('rect', {x: 445, y: 375, width: 10, height: 10, fill: '#19252e', stroke: COLORS.cyan, 'stroke-width': 1.8}));
+    label(parent, {x: labelX, y: labelY}, aircraft.call, {fill: COLORS.cyan, 'text-anchor': anchor, 'font-size': 20});
+    label(parent, {x: labelX, y: labelY + 24}, `${aircraft.level}  ${aircraft.speed}`, {fill: COLORS.cyan, 'text-anchor': anchor, 'font-size': 17});
+    label(parent, {x: labelX, y: labelY + 47}, `${aircraft.type}  H${M.format(aircraft.heading)}`, {fill: '#779ba7', 'text-anchor': anchor, 'font-size': 14});
+  }
+  function renderWaypoint() {
+    const parent = $('waypoint');
+    const p = M.point(target, radius);
+    parent.replaceChildren();
+    parent.append(svgElement('path', {d: `M${p.x} ${p.y - 9} l8 14 h-16 Z`, fill: '#19252e', stroke: COLORS.green, 'stroke-width': 1.8}));
+    const right = p.x < 700;
+    label(parent, {x: p.x + (right ? 16 : -16), y: p.y - 1}, FIXES[fixIndex], {fill: COLORS.green, 'text-anchor': right ? 'start' : 'end', 'font-size': 20});
+  }
+  function renderSolution() {
+    const parent = $('solution');
+    parent.replaceChildren();
+    $('scope-legend').hidden = phase !== 'review';
+    if (phase !== 'review' || !latestResult) return;
+    const result = latestResult;
+    if (result.answer !== null) {
+      const userPoint = M.point(result.answer, radius + 17);
+      line(parent, CENTER, userPoint, {stroke: COLORS.red, 'stroke-width': 2, 'stroke-dasharray': '8 6'});
+      if (result.error >= 12) {
+        const pos = M.point(result.answer, radius + 41);
+        label(parent, pos, `${M.format(result.answer)}°`, {fill: COLORS.red, 'font-size': 17});
+      }
+      if (result.error > 0) {
+        const start = M.point(target, 68);
+        const end = M.point(result.answer, 68);
+        parent.append(svgElement('path', {d: `M450 380 L${start.x} ${start.y} A68 68 0 0 ${result.delta >= 0 ? 1 : 0} ${end.x} ${end.y} Z`, fill: '#fb8f911c', stroke: 'none'}));
+        parent.append(svgElement('path', {d: `M${start.x} ${start.y} A68 68 0 0 ${result.delta >= 0 ? 1 : 0} ${end.x} ${end.y}`, fill: 'none', stroke: COLORS.red, 'stroke-width': 1.2, opacity: .75}));
+      }
+    }
+    line(parent, CENTER, M.point(target, radius - 12), {stroke: COLORS.green, 'stroke-width': 2});
+    const labelPosition = M.point(target, radius * .69);
+    label(parent, {x: labelPosition.x + 13, y: labelPosition.y - 13}, `${M.format(target)}°`, {fill: COLORS.green, 'font-size': 18, 'text-anchor': 'start', stroke: '#19252e', 'stroke-width': 5, 'paint-order': 'stroke fill'});
+    $('user-legend').hidden = result.answer === null;
+    $('user-legend').innerHTML = `<i class="user-line"></i>${result.error === 0 ? 'Tvůj heading · shodný' : 'Tvůj heading'}`;
+  }
+  function renderRadar() {
+    renderRose(); renderSolution(); renderWaypoint(); renderAircraft();
+    const cfg = currentConfig();
+    $('config-rose').textContent = cfg.rose ? `RŮŽICE ${cfg.rose}°` : 'BEZ RŮŽICE';
+    $('config-step').textContent = `CÍLE PO ${cfg.step}°`;
+    $('config-tolerance').textContent = `TOLERANCE ±${cfg.tolerance}°`;
+  }
+
+  function renderSettings() {
+    document.querySelectorAll('[data-setting]').forEach(button => {
+      const selected = String(settings[button.dataset.setting]) === button.dataset.value;
+      button.setAttribute('aria-pressed', String(selected));
+    });
+    $('rose-numbers').checked = settings.showDegrees;
+    $('tolerance').value = settings.tolerance;
+    $('tolerance-output').textContent = `±${settings.tolerance}°`;
+    $('duration').value = settings.duration;
+    $('duration-setting').hidden = settings.mode !== 'timed';
+    $('settings-fields').disabled = isActive();
+    $('settings-status').textContent = isActive() ? 'UZAMČENO' : 'VLASTNÍ';
+    $('settings-note').textContent = isActive() ? 'Nastavení zůstává stejné po celé cvičení. Pro změnu cvičení ukonči.' : 'Růžici a krok cílů můžeš libovolně kombinovat.';
+    $('start-note').textContent = settings.mode === 'practice' ? 'Bez limitu. Vlastním tempem.' : `${settings.duration} sekund odpovídání. Rozbor bez limitu.`;
+  }
+  function renderStats() {
+    const summary = M.summarize(records);
+    $('hits').innerHTML = `${summary.hits} <em>/ ${summary.total}</em>`;
+    $('accuracy').innerHTML = `${summary.accuracy ?? '—'}<small>%</small>`;
+    $('mean-error').innerHTML = `${decimal(summary.meanError)}<small>°</small>`;
+    $('mean-time').innerHTML = `${decimal(summary.meanTime)}<small>s</small>`;
+    const recent = records.slice(-6);
+    $('recent-answers').innerHTML = recent.length ? recent.map(record => `<span class="answer-chip ${record.hit ? '' : 'miss'}" title="Správně ${M.format(record.target)}°, zadáno ${record.answer === null ? 'bez odpovědi' : M.format(record.answer) + '°'}, odchylka ${record.error === null ? '—' : record.error + '°'}">${record.hit ? '✓' : '×'} ${M.format(record.target)}</span>`).join('') : '<span class="muted">Tvoje odpovědi se objeví tady.</span>';
+  }
+  function renderClock() {
+    const timed = isActive() && activeConfig.mode === 'timed';
+    if (timed) {
+      const display = Math.ceil(remaining);
+      $('round-clock').textContent = `${String(Math.floor(display / 60)).padStart(2, '0')}:${String(display % 60).padStart(2, '0')}`;
+    } else {
+      $('round-clock').textContent = `${questionSeconds.toFixed(1)} s`;
+    }
+    $('time-fill').style.width = timed ? `${remaining / activeConfig.duration * 100}%` : '0%';
+    $('time-fill').classList.toggle('warning', timed && remaining <= 15);
+  }
+  function feedbackHTML(result) {
+    const exact = result.error === 0;
+    const title = result.answer === null ? 'Čas vypršel' : exact ? 'Přesně na bod.' : result.hit ? 'V toleranci.' : 'Mimo toleranci.';
+    const delta = result.error === null ? '—' : `${result.delta > 0 ? '+' : result.delta < 0 ? '−' : ''}${result.error}°`;
+    const description = result.answer === null ? 'Tento cíl se počítá jako chyba. Zelená spojnice ukazuje správný směr.' : exact ? 'Tvůj heading se shoduje se správným směrem.' : `Tvůj heading je o ${result.error}° ${result.delta > 0 ? 'vpravo' : 'vlevo'} od správného směru.${result.error === 180 ? ' Je to opačný směr.' : ''}`;
+    return `<div class="feedback-title"><span>${title}</span><span>${delta}</span></div><div class="feedback-values"><div><span>SPRÁVNĚ</span><strong>${M.format(result.target)}°</strong></div><div><span>TVŮJ HEADING</span><strong class="${exact ? '' : 'wrong'}">${result.answer === null ? '—' : M.format(result.answer) + '°'}</strong></div></div><p class="feedback-description">${description}</p>`;
+  }
+  function renderControls() {
+    const active = isActive();
+    const review = phase === 'review';
+    $('phase-badge').textContent = paused ? 'PAUZA' : phase === 'aim' ? 'ODHAD HEADINGU' : review ? 'ROZBOR' : phase === 'finished' ? 'DOKONČENO' : 'PŘIPRAVENO';
+    $('round-label').textContent = active ? `CÍL ${review ? records.length : records.length + 1} / ${activeConfig.mode === 'practice' ? 'TRÉNINK' : 'TEST'}` : phase === 'finished' ? 'DOKONČENÉ CVIČENÍ' : 'TVÉ CVIČENÍ';
+    $('task-title').textContent = active ? `${aircraft.call} → ${FIXES[fixIndex]}` : phase === 'finished' ? 'Další cvičení?' : 'Každý stupeň se počítá.';
+    $('task-copy').innerHTML = active ? review ? 'Porovnej oba směry. Pokračuj, až si odpověď projdeš.' : `Jaký heading přivede letadlo <b>${aircraft.call}</b> k waypointu <b>${FIXES[fixIndex]}</b>?` : phase === 'finished' ? 'Uprav si obtížnost, nebo zkus stejnou kombinaci ještě jednou.' : 'Odhadni heading z letadla k waypointu. Nastav si podmínky a začni.';
+    $('answer-area').hidden = phase !== 'aim';
+    $('heading-input').disabled = paused || phase !== 'aim';
+    $('keypad').querySelectorAll('button').forEach(button => { button.disabled = paused || phase !== 'aim'; });
+    $('feedback').hidden = !review;
+    $('feedback').classList.toggle('miss', review && !latestResult?.hit);
+    if (review) $('feedback').innerHTML = feedbackHTML(latestResult);
+    $('main-action').innerHTML = phase === 'aim' ? 'Potvrdit heading <span>↵</span>' : review ? `${expired ? 'Zobrazit výsledky' : 'Další waypoint'} <span>↵</span>` : 'Zahájit trénink <span>↗</span>';
+    $('main-action').disabled = paused;
+    $('end-button').hidden = !active;
+    $('start-note').hidden = active;
+    $('pause-button').disabled = !active;
+    $('pause-button').textContent = paused ? 'Pokračovat' : 'Pauza';
+    $('pause-overlay').hidden = !paused;
+    $('scope').setAttribute('aria-label', paused ? 'Cvičení pozastaveno' : 'Radarový obraz');
+    renderSettings(); renderClock();
+  }
+  function focusInput() {
+    if (matchMedia('(min-width: 781px)').matches && navigator.maxTouchPoints === 0) $('heading-input').focus({preventScroll: true});
+  }
+  function nextTarget() {
+    target = M.pickHeading(activeConfig.step, target);
+    radius = 211 + Math.random() * 43;
+    fixIndex = (fixIndex + 1 + Math.floor(Math.random() * (FIXES.length - 1))) % FIXES.length;
+    aircraft = {...AIRCRAFT[Math.floor(Math.random() * AIRCRAFT.length)], heading: Math.floor(Math.random() * 72) * 5};
+    questionSeconds = 0;
+    latestResult = null;
+    phase = 'aim'; paused = false;
+    lastTick = performance.now();
+    $('heading-input').value = '';
+    $('heading-input').removeAttribute('aria-invalid');
+    $('input-error').textContent = '';
+    renderRadar(); renderControls(); focusInput();
+  }
+  function startSession() {
+    activeConfig = {...settings};
+    records = [];
+    sessionDate = new Date().toISOString();
+    remaining = activeConfig.duration;
+    expired = false;
+    if ($('results-dialog').open) $('results-dialog').close();
+    nextTarget(); renderStats();
+  }
+  function tick() {
+    const now = performance.now();
+    if (phase === 'aim' && !paused) {
+      const dt = Math.max(0, (now - lastTick) / 1000);
+      const elapsed = activeConfig.mode === 'timed' ? Math.min(dt, remaining) : dt;
+      questionSeconds += elapsed;
+      if (activeConfig.mode === 'timed') {
+        remaining = Math.max(0, remaining - dt);
+        if (remaining <= 0) {
+          expired = true;
+          grade(null);
+        }
+      }
+    }
+    lastTick = now;
+    renderClock();
+  }
+  function grade(answer) {
+    if (phase !== 'aim') return;
+    latestResult = {...M.assess(answer, target, activeConfig.tolerance), seconds: questionSeconds};
+    records.push(latestResult);
+    phase = 'review';
+    if (answer !== null) $('heading-input').value = M.format(answer);
+    renderStats(); renderRadar(); renderControls();
+    if (matchMedia('(min-width: 781px)').matches) $('main-action').focus({preventScroll: true});
+  }
+  function submitAnswer() {
+    tick();
+    if (phase !== 'aim' || paused) return;
+    const answer = M.parse($('heading-input').value);
+    if (answer === null) {
+      $('input-error').textContent = 'Zadej heading od 000 do 360.';
+      $('heading-input').setAttribute('aria-invalid', 'true');
+      focusInput(); return;
+    }
+    grade(answer);
+  }
+  function mainAction() {
+    if (paused) return;
+    if (phase === 'idle' || phase === 'finished') startSession();
+    else if (phase === 'aim') submitAnswer();
+    else if (expired) finishSession();
+    else nextTarget();
+  }
+  function setPaused(value) {
+    if (!isActive() || value === paused) return;
+    tick();
+    paused = value;
+    lastTick = performance.now();
+    renderControls();
+    if (paused) $('resume-button').focus({preventScroll: true});
+    else if (phase === 'aim') focusInput();
+    else if (phase === 'review') $('main-action').focus({preventScroll: true});
+  }
+  function finishSession() {
+    if (!isActive()) return;
+    tick();
+    const completed = {date: sessionDate, config: {...activeConfig}, records: [...records]};
+    phase = 'finished'; paused = false;
+    if (completed.records.length) {
+      history.unshift(completed); history = history.slice(0, 20);
+      writeStorage(STORAGE_HISTORY, history);
+    }
+    $('solution').replaceChildren();
+    $('scope-legend').hidden = true;
+    renderRose(); renderControls();
+    showSession(completed);
+  }
+  function configDescription(cfg) {
+    return `${cfg.rose ? 'Růžice ' + cfg.rose + '° ' + (cfg.showDegrees ? 's čísly' : 'bez čísel') : 'Bez růžice'} · cíle po ${cfg.step}° · tolerance ±${cfg.tolerance}° · ${cfg.mode === 'timed' ? 'test ' + cfg.duration + ' s' : 'volný trénink'}`;
+  }
+  function showSession(session) {
+    const summary = M.summarize(session.records);
+    $('results-eyebrow').textContent = 'DEBRIEFING';
+    $('results-title').textContent = summary.total ? 'Každý cíl je zkušenost.' : 'Zatím bez odpovědí.';
+    const rows = session.records.map((r, i) => `<tr><td>${i + 1}</td><td>${M.format(r.target)}°</td><td>${r.answer === null ? 'ČAS' : M.format(r.answer) + '°'}</td><td class="${r.hit ? 'hit' : 'miss'}">${r.error === null ? '—' : r.error + '°'}</td><td>${decimal(r.seconds)} s</td></tr>`).join('');
+    $('results-content').innerHTML = `<div class="results-config">${configDescription(session.config)}</div><div class="result-metrics"><div class="result-metric"><span>ZÁSAHY</span><strong>${summary.hits}<small> / ${summary.total}</small></strong></div><div class="result-metric"><span>ÚSPĚŠNOST</span><strong>${summary.accuracy ?? '—'}<small> %</small></strong></div><div class="result-metric"><span>PRŮM. ODCHYLKA</span><strong>${decimal(summary.meanError)}<small> °</small></strong></div><div class="result-metric"><span>PRŮM. ČAS ODPOVĚDI</span><strong>${decimal(summary.meanTime)}<small> s</small></strong></div></div>${summary.total ? `<div class="table-wrap"><table class="result-table"><thead><tr><th>#</th><th>Správně</th><th>Zadáno</th><th>Odchylka</th><th>Čas</th></tr></thead><tbody>${rows}</tbody></table></div>` : '<p>Zahaj nové cvičení a zkus první waypoint.</p>'}<p class="small-copy muted">Průměrná odchylka a čas se počítají ze zadaných odpovědí. Vypršení času snižuje úspěšnost.</p><button class="primary" id="again-button">Nové cvičení ↗</button>`;
+    if (isActive()) $('again-button').textContent = 'Zpět k tréninku';
+    $('again-button').addEventListener('click', () => { $('results-dialog').close(); if (isActive()) return; startSession(); });
+    if (!$('results-dialog').open) $('results-dialog').showModal();
+  }
+  function showHistory() {
+    if (isActive() && !paused) setPaused(true);
+    $('results-eyebrow').textContent = 'HISTORIE';
+    $('results-title').textContent = 'Tvoje poslední cvičení.';
+    $('results-content').innerHTML = history.length ? history.map((session, index) => {
+      const summary = M.summarize(session.records);
+      const date = new Date(session.date).toLocaleString('cs-CZ', {day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit'});
+      return `<div class="history-row"><div><time>${escapeText(date)}</time><strong>${summary.accuracy}%</strong></div><p>${countText(summary.total)} · odchylka ${decimal(summary.meanError)}° · ${decimal(summary.meanTime)} s<br>${configDescription(session.config)}</p><button class="text-button" data-session="${index}">Zobrazit odpovědi ↗</button></div>`;
+    }).join('') : `<p>${storageAvailable ? 'Po dokončení prvního cvičení tu najdeš jeho výsledky. Ukládá se posledních 20 cvičení v tomto prohlížeči.' : 'Ukládání historie není v tomto prohlížeči dostupné. Samotný trénink funguje dál.'}</p>`;
+    document.querySelectorAll('[data-session]').forEach(button => button.addEventListener('click', () => showSession(history[Number(button.dataset.session)])));
+    $('results-dialog').showModal();
+  }
+
+  function updateSettings(key, value) {
+    if (isActive()) return;
+    settings = validConfig({...settings, [key]: value});
+    writeStorage(STORAGE_SETTINGS, settings);
+    // Keep the ready-state example on the selected target grid as well.
+    target = M.normalize(Math.round(target / settings.step) * settings.step);
+    renderSettings(); renderRadar();
+  }
+  document.querySelectorAll('[data-setting]').forEach(button => button.addEventListener('click', () => {
+    const key = button.dataset.setting;
+    updateSettings(key, key === 'mode' ? button.dataset.value : Number(button.dataset.value));
+  }));
+  $('rose-numbers').addEventListener('change', event => updateSettings('showDegrees', event.target.checked));
+  $('tolerance').addEventListener('input', event => updateSettings('tolerance', Number(event.target.value)));
+  $('duration').addEventListener('change', event => updateSettings('duration', Number(event.target.value)));
+  $('heading-input').addEventListener('input', event => {
+    event.target.value = event.target.value.replace(/[^0-9]/g, '').slice(0, 3);
+    $('input-error').textContent = '';
+    event.target.removeAttribute('aria-invalid');
+  });
+  function typeKey(key) {
+    if (phase !== 'aim' || paused) return;
+    const input = $('heading-input');
+    if (key === 'clear') input.value = '';
+    else if (key === 'backspace') input.value = input.value.slice(0, -1);
+    else if (input.value.length < 3) input.value += key;
+    $('input-error').textContent = '';
+    input.removeAttribute('aria-invalid');
+  }
+  $('keypad').addEventListener('click', event => {
+    const button = event.target.closest('[data-key]');
+    if (button) typeKey(button.dataset.key);
+  });
+  $('main-action').addEventListener('click', mainAction);
+  $('end-button').addEventListener('click', finishSession);
+  $('pause-button').addEventListener('click', () => setPaused(!paused));
+  $('resume-button').addEventListener('click', () => setPaused(false));
+  $('history-button').addEventListener('click', showHistory);
+  $('help-button').addEventListener('click', () => {
+    if (isActive() && !paused) setPaused(true);
+    $('help-dialog').showModal();
+  });
+  document.querySelectorAll('.close-dialog').forEach(button => button.addEventListener('click', () => button.closest('dialog').close()));
+  document.querySelectorAll('dialog').forEach(dialog => dialog.addEventListener('click', event => {
+    if (event.target === dialog) {
+      const rect = dialog.getBoundingClientRect();
+      if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) dialog.close();
+    }
+  }));
+  document.addEventListener('keydown', event => {
+    if (event.ctrlKey || event.metaKey || event.altKey || document.querySelector('dialog[open]')) return;
+    if (event.key.toLowerCase() === 'p' && isActive()) { event.preventDefault(); setPaused(!paused); return; }
+    if (paused) return;
+    const focused = event.target;
+    const isHeading = focused === $('heading-input');
+    const isFormControl = focused.matches('input, select, textarea');
+    if (event.key === 'Enter' && (isHeading || focused === document.body || focused === $('main-action') || focused.closest('#keypad'))) {
+      event.preventDefault(); if (!event.repeat) mainAction(); return;
+    }
+    if (phase === 'aim' && !isHeading && !isFormControl && /^\d$/.test(event.key)) { event.preventDefault(); typeKey(event.key); }
+    if (phase === 'aim' && !isHeading && !isFormControl && event.key === 'Backspace') { event.preventDefault(); typeKey('backspace'); }
+    if (phase === 'aim' && event.key === 'Escape') { event.preventDefault(); typeKey('clear'); }
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && phase === 'aim' && !paused) setPaused(true);
+  });
+  function updateUtc() { $('utc').textContent = new Date().toISOString().slice(11, 19); }
+  renderSettings(); renderRadar(); renderStats(); renderControls(); updateUtc();
+  setInterval(tick, 100);
+  setInterval(updateUtc, 1000);
+})();
+
+</script>
+</body>
+</html>
