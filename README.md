@@ -2,22 +2,6 @@
 
 Radarový trénink odhadu headingů, připravený pro GitHub Pages. Funguje bez instalace, sestavování a serverové části. Rozhraní používá vlastní radarovou grafiku inspirovanou ATC pracovišti, včetně symbolu letadla, leaderu, labelu a waypointu.
 
-## Spuštění
-
-Rozbal ZIP a otevři **index.html** v běžném prohlížeči. Všechny soubory ponech ve stejné složce. Aplikace nemá externí knihovny, fonty ani jiné síťové závislosti.
-
-## GitHub Pages
-
-1. Vytvoř na GitHubu repozitář, například `heading-lab`.
-2. Nahraj **obsah** této složky do jeho kořene. V kořeni musí být přímo `index.html`, `styles.css`, `engine.js`, `app.js` a `favicon.svg`. Přidej také `.nojekyll`, pokud jej při nahrávání vidíš.
-3. V repozitáři otevři **Settings → Pages**.
-4. V části **Build and deployment → Source** vyber **Deploy from a branch**.
-5. Vyber větev **main**, složku **/(root)** a klikni na **Save**.
-6. Po dokončení publikování najdeš adresu hry na téže stránce. Případný průběh a chyby jsou v záložce **Actions**.
-
-Použité cesty jsou relativní, takže hra funguje i v podadresáři projektového webu. `tests/` a tento návod můžeš v repozitáři ponechat; běh hry je nepotřebuje.
-
-Postup podle [oficiální dokumentace GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site). Dostupnost Pages pro soukromý repozitář závisí na plánu účtu.
 
 ## Nezávislá nastavení
 
