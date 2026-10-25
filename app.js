@@ -6,7 +6,7 @@
   const NS = 'http://www.w3.org/2000/svg';
   const COLORS = {green: '#b5db8b', cyan: '#95d8e0', red: '#fb8f91', muted: '#9bb0bd'};
   const CENTER = {x: 450, y: 380};
-  const DEFAULT = {rose: 90, step: 15, tolerance: 5, mode: 'practice', duration: 120};
+  const DEFAULT = {rose: 90, showDegrees: false, step: 15, tolerance: 5, mode: 'practice', duration: 120};
   const STORAGE_SETTINGS = 'heading-lab.settings.v1';
   const STORAGE_HISTORY = 'heading-lab.history.v1';
   const FIXES = ['LUMEN', 'VEXOR', 'NOKTA', 'RAVIK', 'MAVEN', 'TOLIX', 'NERVO', 'BEXAL', 'ROMIK', 'KAVEN', 'VILOR', 'DOMEX'];
@@ -26,10 +26,11 @@
     try { localStorage.setItem(key, JSON.stringify(value)); }
     catch { storageAvailable = false; }
   }
-  function validConfig(raw) {
+  function validConfig(raw, fallbackShowDegrees = DEFAULT.showDegrees) {
     const source = raw && typeof raw === 'object' ? raw : {};
     return {
       rose: [0, 30, 90].includes(source.rose) ? source.rose : DEFAULT.rose,
+      showDegrees: typeof source.showDegrees === 'boolean' ? source.showDegrees : fallbackShowDegrees,
       step: [5, 15, 30].includes(source.step) ? source.step : DEFAULT.step,
       tolerance: Number.isInteger(source.tolerance) && source.tolerance >= 0 && source.tolerance <= 15 ? source.tolerance : DEFAULT.tolerance,
       mode: source.mode === 'timed' ? 'timed' : 'practice',
@@ -40,7 +41,7 @@
     if (!Array.isArray(raw)) return [];
     return raw.filter(item => item && typeof item.date === 'string' && Number.isFinite(Date.parse(item.date)) && Array.isArray(item.records))
       .slice(0, 20).map(item => ({
-        date: new Date(item.date).toISOString(), config: validConfig(item.config),
+        date: new Date(item.date).toISOString(), config: validConfig(item.config, true),
         records: item.records.filter(r => r && Number.isInteger(r.target) && r.target >= 0 && r.target < 360 &&
           (r.answer === null || (Number.isInteger(r.answer) && r.answer >= 0 && r.answer < 360)) && Number.isFinite(r.seconds) && r.seconds >= 0)
           .slice(0, 10000).map(r => ({...M.assess(r.answer, r.target, validConfig(item.config).tolerance), seconds: r.seconds}))
@@ -90,7 +91,7 @@
     for (let heading = 0; heading < 360; heading += step) {
       const cardinal = heading % 90 === 0;
       line(parent, M.point(heading, cardinal ? 284 : 290), M.point(heading, 303), {stroke: cardinal ? '#b6c7d0' : '#8296a3', 'stroke-width': cardinal ? 1.6 : 1.2});
-      label(parent, M.point(heading, 331), M.format(heading), {fill: cardinal ? '#bbcbd4' : '#8da3b0', 'font-size': cardinal ? 21 : 18});
+      if (currentConfig().showDegrees) label(parent, M.point(heading, 331), M.format(heading), {fill: cardinal ? '#bbcbd4' : '#8da3b0', 'font-size': cardinal ? 21 : 18});
     }
   }
   function renderAircraft() {
@@ -160,6 +161,7 @@
       const selected = String(settings[button.dataset.setting]) === button.dataset.value;
       button.setAttribute('aria-pressed', String(selected));
     });
+    $('rose-numbers').checked = settings.showDegrees;
     $('tolerance').value = settings.tolerance;
     $('tolerance-output').textContent = `±${settings.tolerance}°`;
     $('duration').value = settings.duration;
@@ -314,7 +316,7 @@
     showSession(completed);
   }
   function configDescription(cfg) {
-    return `${cfg.rose ? 'Růžice ' + cfg.rose + '°' : 'Bez růžice'} · cíle po ${cfg.step}° · tolerance ±${cfg.tolerance}° · ${cfg.mode === 'timed' ? 'test ' + cfg.duration + ' s' : 'volný trénink'}`;
+    return `${cfg.rose ? 'Růžice ' + cfg.rose + '° ' + (cfg.showDegrees ? 's čísly' : 'bez čísel') : 'Bez růžice'} · cíle po ${cfg.step}° · tolerance ±${cfg.tolerance}° · ${cfg.mode === 'timed' ? 'test ' + cfg.duration + ' s' : 'volný trénink'}`;
   }
   function showSession(session) {
     const summary = M.summarize(session.records);
@@ -351,6 +353,7 @@
     const key = button.dataset.setting;
     updateSettings(key, key === 'mode' ? button.dataset.value : Number(button.dataset.value));
   }));
+  $('rose-numbers').addEventListener('change', event => updateSettings('showDegrees', event.target.checked));
   $('tolerance').addEventListener('input', event => updateSettings('tolerance', Number(event.target.value)));
   $('duration').addEventListener('change', event => updateSettings('duration', Number(event.target.value)));
   $('heading-input').addEventListener('input', event => {
