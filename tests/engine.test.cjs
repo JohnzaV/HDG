@@ -52,3 +52,31 @@ test('A timed-out target counts as a miss without skewing answered-heading means
 test('An empty session has no invented accuracy or averages', () => {
   assert.deepEqual(M.summarize([]), {total: 0, hits: 0, accuracy: null, meanError: null, meanTime: null});
 });
+
+test('A 2.5-second radar step covers the distance given by ground speed', () => {
+  const start = {x: 450, y: 380};
+  const at240 = M.move(start, 90, 240, 2.5);
+  const at480 = M.move(start, 90, 480, 2.5);
+  assert.ok(Math.abs(at240.x - start.x - 25 / 6) < 1e-9);
+  assert.equal(at240.y, start.y);
+  assert.ok(Math.abs((at480.x - start.x) / (at240.x - start.x) - 2) < 1e-9);
+  assert.deepEqual(M.move(start, 0, 240, 0), start);
+});
+test('The answer is computed from the displaced aircraft to a fixed waypoint', () => {
+  const waypoint = {x: 450, y: 180};
+  const original = {x: 450, y: 380};
+  const displaced = {x: 650, y: 380};
+  assert.equal(M.answerHeading(original, waypoint), 0);
+  assert.equal(M.answerHeading(displaced, waypoint), 315);
+  assert.deepEqual(waypoint, {x: 450, y: 180});
+  assert.equal(M.assess(315, M.answerHeading(displaced, waypoint), 0).hit, true);
+  assert.equal(M.assess(0, M.answerHeading(displaced, waypoint), 0).hit, false);
+});
+test('Dynamic answers round to whole degrees and normalize rounding through north', () => {
+  const start = {x: 450, y: 380};
+  assert.equal(M.answerHeading(start, M.point(359.7, 200, start)), 0);
+  assert.equal(M.answerHeading(start, M.point(234.6, 200, start)), 235);
+  const stepped = M.move(M.move(start, 225, 280, 2.5), 225, 280, 2.5);
+  const batched = M.move(start, 225, 280, 5);
+  assert.ok(Math.hypot(stepped.x - batched.x, stepped.y - batched.y) < 1e-9);
+});

@@ -6,7 +6,7 @@ Radarový trénink odhadu headingů, připravený pro GitHub Pages. Funguje bez 
 
 Rozbal ZIP do nové složky a otevři **Heading_Lab.html** v běžném prohlížeči. Tato samostatná verze obsahuje vše uvnitř jednoho souboru, takže se nemohou promíchat staré a nové skripty nebo styly. Můžeš ji také přejmenovat na `index.html` a samotnou nahrát na GitHub Pages.
 
-Součástí balíčku zůstává i **index.html** s oddělenými zdrojovými soubory, určený pro další úpravy. Při jeho použití ponech všechny soubory ve stejné složce a při aktualizaci nahraď celý balíček. Odkazy na skripty a styly obsahují verzi, aby si prohlížeč vyžádal aktuální soubory. Verze 1.2 je viditelná v patičce.
+Součástí balíčku zůstává i **index.html** s oddělenými zdrojovými soubory, určený pro další úpravy. Při jeho použití ponech všechny soubory ve stejné složce a při aktualizaci nahraď celý balíček. Odkazy na skripty a styly obsahují verzi, aby si prohlížeč vyžádal aktuální soubory. Verze 1.3 je viditelná v patičce.
 
 Aplikace nemá externí knihovny, fonty ani jiné síťové závislosti.
 
@@ -32,10 +32,13 @@ Postup podle [oficiální dokumentace GitHub Pages](https://docs.github.com/en/p
 | Růžice | značky po 30° | značky po 90° | růžice je skrytá |
 | Krok cílů | 30° | 15° | 5° |
 
-Krok znamená, že správný heading je násobkem zvolené hodnoty. Stejný heading se nevygeneruje dvakrát za sebou. Vzdálenost waypointu se mírně mění; nemění úhlovou obtížnost.
+Ve statickém režimu krok znamená, že správný heading je násobkem zvolené hodnoty. V pohyblivém režimu to platí pro výchozí polohu. Stejný heading se nevygeneruje dvakrát za sebou. Vzdálenost waypointu se mírně mění; nemění úhlovou obtížnost.
 
 - **Čísla stupňů:** samostatný přepínač u růžice. Ve výchozím nastavení jsou vypnutá: zůstává kruh a značky podle obtížnosti, číselné hodnoty se nezobrazují. Volba se pamatuje pro další cvičení. V režimu Hard zůstává růžice skrytá i při zapnutých číslech. Čísla správného řešení v rozboru se tímto přepínačem neskrývají.
 - **Tolerance zásahu:** samostatně od 0° do ±15°. Hranice je včetně; při ±5° se odchylka přesně 5° počítá jako zásah.
+- **Pohyb letadla:** volitelný, ve výchozím nastavení vypnutý. Poloha se mění po 2,5 s podle GS (kt) a zobrazeného vektoru. Waypoint zůstává na stejném místě, růžice a vzdálenostní kruhy sledují letadlo. Měřítko je 25 souřadnicových jednotek na NM; vnější vzdálenostní kruh má poloměr 10 NM. Při delším letu se výřez radaru podle potřeby rozšíří, aby se růžice neořízla.
+- **Heading při pohybu:** krok cílů 30°/15°/5° platí pro výchozí směr. Po posunu se aktuální směr k waypointu zaokrouhluje na celé stupně. I s nulovou tolerancí jde tedy zadat přesnou odpověď. Hodnotí se poslední zobrazená radarová poloha, nikoli neviditelný posun v okamžiku stisku Enteru.
+- **Pauza a rozbor:** zastavují i pohyb letadla. Nový waypoint vždy začíná s letadlem ve středu.
 - **Volný trénink:** bez časového limitu, ukončuje se ručně.
 - **Test na čas:** 60, 120 nebo 180 sekund aktivního odpovídání. Rozbor a pauza se do limitu nepočítají. Nezodpovězený cíl při vypršení času je chyba a zobrazí se jeho řešení.
 - **Nastavení během cvičení:** zůstává uzamčené, aby výsledky patřily stejné kombinaci podmínek. Ukonči cvičení, uprav hodnoty a začni nové.
@@ -44,7 +47,7 @@ Krok znamená, že správný heading je násobkem zvolené hodnoty. Stejný head
 
 Sever je nahoře, letadlo je ve středu růžice. Zadej heading směrem k zelenému waypointu a potvrď jej Enterem. Kratší zápis, například `90`, se přijímá jako `090`. `000` i `360` znamenají sever; rozhraní sever zobrazuje jako `360`.
 
-Hra předpokládá bezvětří. Hledaný heading se tedy shoduje se směrem k waypointu. Krátký modrý vektor a údaj `Hxxx` u labelu znázorňují **současný** směr letadla; neukazují řešení. Letadlo se nepohybuje a waypointy ani jejich umístění nepředstavují skutečnou navigační mapu.
+Hra předpokládá bezvětří. Hledaný heading se tedy shoduje se směrem k waypointu. Krátký modrý vektor a údaj `Hxxx` u labelu znázorňují **současný** směr letadla; neukazují řešení. Ve statickém režimu se letadlo nepohybuje; pohyb lze zapnout samostatně. Waypointy ani jejich umístění nepředstavují skutečnou navigační mapu.
 
 Po odpovědi se objeví:
 
@@ -53,7 +56,7 @@ Po odpovědi se objeví:
 - vyznačený rozdíl směrů a číselná odchylka,
 - vysvětlení, zda odpověď leží vlevo, nebo vpravo od správného směru.
 
-Při přesné odpovědi obě čáry splývají. Odchylka se vždy počítá nejkratší cestou přes sever: zadání 005° při cíli 355° znamená +10°, ne −350°. Další cíl se zobrazí až po dalším Enteru nebo kliknutí.
+Při přesné odpovědi obě čáry splývají; při pohybu se mohou lišit o zaokrouhlení směru na celé stupně (nejvýše půl stupně). Odchylka se vždy počítá nejkratší cestou přes sever: zadání 005° při cíli 355° znamená +10°, ne −350°. Další cíl se zobrazí až po dalším Enteru nebo kliknutí.
 
 ## Ovládání
 
@@ -93,3 +96,5 @@ node --test tests/engine.test.cjs
 ```
 
 Jde o samostatnou osobní tréninkovou hru. Nepoužívá software, logo ani grafické soubory TopSky nebo EUROCONTROLu.
+
+Po úpravě zdrojů vytvoříš znovu samostatné HTML a ZIP příkazem `python3 build_release.py`.

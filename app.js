@@ -6,7 +6,9 @@
   const NS = 'http://www.w3.org/2000/svg';
   const COLORS = {green: '#b5db8b', cyan: '#95d8e0', red: '#fb8f91', muted: '#9bb0bd'};
   const CENTER = {x: 450, y: 380};
-  const DEFAULT = {rose: 90, showDegrees: false, step: 15, tolerance: 5, mode: 'practice', duration: 120};
+  const DEFAULT = {rose: 90, showDegrees: false, moving: false, step: 15, tolerance: 5, mode: 'practice', duration: 120};
+  const RADAR_INTERVAL = 2.5;
+  const UNITS_PER_NM = 25;
   const STORAGE_SETTINGS = 'heading-lab.settings.v1';
   const STORAGE_HISTORY = 'heading-lab.history.v1';
   const FIXES = ['LUMEN', 'VEXOR', 'NOKTA', 'RAVIK', 'MAVEN', 'TOLIX', 'NERVO', 'BEXAL', 'ROMIK', 'KAVEN', 'VILOR', 'DOMEX'];
@@ -31,6 +33,7 @@
     return {
       rose: [0, 30, 90].includes(source.rose) ? source.rose : DEFAULT.rose,
       showDegrees: typeof source.showDegrees === 'boolean' ? source.showDegrees : fallbackShowDegrees,
+      moving: source.moving === true,
       step: [5, 15, 30].includes(source.step) ? source.step : DEFAULT.step,
       tolerance: Number.isInteger(source.tolerance) && source.tolerance >= 0 && source.tolerance <= 15 ? source.tolerance : DEFAULT.tolerance,
       mode: source.mode === 'timed' ? 'timed' : 'practice',
@@ -57,6 +60,10 @@
   let radius = 245;
   let fixIndex = 0;
   let aircraft = {...AIRCRAFT[0], heading: 90};
+  let aircraftPosition = {...CENTER};
+  let waypointPosition = M.point(target, radius);
+  let trackHistory = [];
+  let radarElapsed = 0;
   let questionSeconds = 0;
   let remaining = settings.duration;
   let lastTick = performance.now();
@@ -84,6 +91,7 @@
   }
   function renderRose() {
     const parent = $('rose');
+    parent.setAttribute('transform', `translate(${aircraftPosition.x - CENTER.x} ${aircraftPosition.y - CENTER.y})`);
     parent.replaceChildren();
     const step = currentConfig().rose;
     if (!step) return;
@@ -97,26 +105,30 @@
   function renderAircraft() {
     const parent = $('aircraft');
     parent.replaceChildren();
-    const p = M.point(target, radius);
-    const side = p.x >= CENTER.x ? -1 : 1;
-    const vertical = p.y >= CENTER.y ? -1 : 1;
+    const p = waypointPosition;
+    const side = p.x >= aircraftPosition.x ? -1 : 1;
+    const vertical = p.y >= aircraftPosition.y ? -1 : 1;
     const anchor = side === 1 ? 'start' : 'end';
-    const labelX = CENTER.x + side * 54;
-    const labelY = CENTER.y + vertical * 58;
-    for (const r of [20, 34, 48]) {
-      const ghost = M.point(aircraft.heading + 180, r);
-      parent.append(svgElement('circle', {cx: ghost.x, cy: ghost.y, r: 2.2, fill: COLORS.cyan, opacity: 1 - r / 65}));
+    const labelX = aircraftPosition.x + side * 54;
+    const labelY = aircraftPosition.y + vertical * 58;
+    if (currentConfig().moving) {
+      trackHistory.forEach((ghost, index) => parent.append(svgElement('circle', {cx: ghost.x, cy: ghost.y, r: 2.2, fill: COLORS.cyan, opacity: .25 + index * .2})));
+    } else {
+      for (const r of [20, 34, 48]) {
+        const ghost = M.point(aircraft.heading + 180, r, aircraftPosition);
+        parent.append(svgElement('circle', {cx: ghost.x, cy: ghost.y, r: 2.2, fill: COLORS.cyan, opacity: 1 - r / 65}));
+      }
     }
-    line(parent, CENTER, M.point(aircraft.heading, 48), {stroke: COLORS.cyan, 'stroke-width': 1.8, opacity: .85});
-    parent.append(svgElement('path', {d: `M450 380 L${450 + side * 30} ${380 + vertical * 35} H${labelX}`, fill: 'none', stroke: COLORS.cyan, 'stroke-width': 1.1, opacity: .7}));
-    parent.append(svgElement('rect', {x: 445, y: 375, width: 10, height: 10, fill: '#19252e', stroke: COLORS.cyan, 'stroke-width': 1.8}));
+    line(parent, aircraftPosition, M.point(aircraft.heading, 48, aircraftPosition), {stroke: COLORS.cyan, 'stroke-width': 1.8, opacity: .85});
+    parent.append(svgElement('path', {d: `M${aircraftPosition.x} ${aircraftPosition.y} L${aircraftPosition.x + side * 30} ${aircraftPosition.y + vertical * 35} H${labelX}`, fill: 'none', stroke: COLORS.cyan, 'stroke-width': 1.1, opacity: .7}));
+    parent.append(svgElement('rect', {x: aircraftPosition.x - 5, y: aircraftPosition.y - 5, width: 10, height: 10, fill: '#19252e', stroke: COLORS.cyan, 'stroke-width': 1.8}));
     label(parent, {x: labelX, y: labelY}, aircraft.call, {fill: COLORS.cyan, 'text-anchor': anchor, 'font-size': 20});
     label(parent, {x: labelX, y: labelY + 24}, `${aircraft.level}  ${aircraft.speed}`, {fill: COLORS.cyan, 'text-anchor': anchor, 'font-size': 17});
     label(parent, {x: labelX, y: labelY + 47}, `${aircraft.type}  H${M.format(aircraft.heading)}`, {fill: '#779ba7', 'text-anchor': anchor, 'font-size': 14});
   }
   function renderWaypoint() {
     const parent = $('waypoint');
-    const p = M.point(target, radius);
+    const p = waypointPosition;
     parent.replaceChildren();
     parent.append(svgElement('path', {d: `M${p.x} ${p.y - 9} l8 14 h-16 Z`, fill: '#19252e', stroke: COLORS.green, 'stroke-width': 1.8}));
     const right = p.x < 700;
@@ -128,29 +140,40 @@
     $('scope-legend').hidden = phase !== 'review';
     if (phase !== 'review' || !latestResult) return;
     const result = latestResult;
+    const actualBearing = M.bearing(aircraftPosition, waypointPosition);
     if (result.answer !== null) {
-      const userPoint = M.point(result.answer, radius + 17);
-      line(parent, CENTER, userPoint, {stroke: COLORS.red, 'stroke-width': 2, 'stroke-dasharray': '8 6'});
+      const userPoint = M.point(result.answer, radius + 17, aircraftPosition);
+      line(parent, aircraftPosition, userPoint, {stroke: COLORS.red, 'stroke-width': 2, 'stroke-dasharray': '8 6'});
       if (result.error >= 12) {
-        const pos = M.point(result.answer, radius + 41);
+        const pos = M.point(result.answer, radius + 41, aircraftPosition);
         label(parent, pos, `${M.format(result.answer)}°`, {fill: COLORS.red, 'font-size': 17});
       }
       if (result.error > 0) {
-        const start = M.point(target, 68);
-        const end = M.point(result.answer, 68);
-        parent.append(svgElement('path', {d: `M450 380 L${start.x} ${start.y} A68 68 0 0 ${result.delta >= 0 ? 1 : 0} ${end.x} ${end.y} Z`, fill: '#fb8f911c', stroke: 'none'}));
-        parent.append(svgElement('path', {d: `M${start.x} ${start.y} A68 68 0 0 ${result.delta >= 0 ? 1 : 0} ${end.x} ${end.y}`, fill: 'none', stroke: COLORS.red, 'stroke-width': 1.2, opacity: .75}));
+        const start = M.point(actualBearing, 68, aircraftPosition);
+        const end = M.point(result.answer, 68, aircraftPosition);
+        const sweep = M.difference(result.answer, actualBearing) >= 0 ? 1 : 0;
+        parent.append(svgElement('path', {d: `M${aircraftPosition.x} ${aircraftPosition.y} L${start.x} ${start.y} A68 68 0 0 ${sweep} ${end.x} ${end.y} Z`, fill: '#fb8f911c', stroke: 'none'}));
+        parent.append(svgElement('path', {d: `M${start.x} ${start.y} A68 68 0 0 ${sweep} ${end.x} ${end.y}`, fill: 'none', stroke: COLORS.red, 'stroke-width': 1.2, opacity: .75}));
       }
     }
-    line(parent, CENTER, M.point(target, radius - 12), {stroke: COLORS.green, 'stroke-width': 2});
-    const labelPosition = M.point(target, radius * .69);
-    label(parent, {x: labelPosition.x + 13, y: labelPosition.y - 13}, `${M.format(target)}°`, {fill: COLORS.green, 'font-size': 18, 'text-anchor': 'start', stroke: '#19252e', 'stroke-width': 5, 'paint-order': 'stroke fill'});
+    line(parent, aircraftPosition, M.point(actualBearing, Math.max(0, radius - 12), aircraftPosition), {stroke: COLORS.green, 'stroke-width': 2});
+    const labelPosition = M.point(actualBearing, radius * .69, aircraftPosition);
+    label(parent, {x: labelPosition.x + 13, y: labelPosition.y - 13}, `${M.format(result.target)}°`, {fill: COLORS.green, 'font-size': 18, 'text-anchor': 'start', stroke: '#19252e', 'stroke-width': 5, 'paint-order': 'stroke fill'});
     $('user-legend').hidden = result.answer === null;
     $('user-legend').innerHTML = `<i class="user-line"></i>${result.error === 0 ? 'Tvůj heading · shodný' : 'Tvůj heading'}`;
   }
   function renderRadar() {
     renderRose(); renderSolution(); renderWaypoint(); renderAircraft();
     const cfg = currentConfig();
+    $('range-rings').setAttribute('transform', `translate(${aircraftPosition.x - CENTER.x} ${aircraftPosition.y - CENTER.y})`);
+    $('motion-indicator').hidden = !cfg.moving;
+    // Only expand the viewport when needed, keeping the whole moving rose visible.
+    const extent = cfg.rose ? 355 : 270;
+    const left = Math.min(0, aircraftPosition.x - extent, waypointPosition.x - 100);
+    const top = Math.min(0, aircraftPosition.y - extent, waypointPosition.y - 40);
+    const right = Math.max(900, aircraftPosition.x + extent, waypointPosition.x + 100);
+    const bottom = Math.max(760, aircraftPosition.y + extent, waypointPosition.y + 40);
+    $('radar').setAttribute('viewBox', `${left} ${top} ${right - left} ${bottom - top}`);
     $('config-rose').textContent = cfg.rose ? `RŮŽICE ${cfg.rose}°` : 'BEZ RŮŽICE';
     $('config-step').textContent = `CÍLE PO ${cfg.step}°`;
     $('config-tolerance').textContent = `TOLERANCE ±${cfg.tolerance}°`;
@@ -162,6 +185,7 @@
       button.setAttribute('aria-pressed', String(selected));
     });
     $('rose-numbers').checked = settings.showDegrees;
+    $('moving-aircraft').checked = settings.moving;
     $('tolerance').value = settings.tolerance;
     $('tolerance-output').textContent = `±${settings.tolerance}°`;
     $('duration').value = settings.duration;
@@ -229,6 +253,14 @@
     radius = 211 + Math.random() * 43;
     fixIndex = (fixIndex + 1 + Math.floor(Math.random() * (FIXES.length - 1))) % FIXES.length;
     aircraft = {...AIRCRAFT[Math.floor(Math.random() * AIRCRAFT.length)], heading: Math.floor(Math.random() * 72) * 5};
+    if (activeConfig.moving) {
+      const crossingAngles = [45, 60, 75, 90, 105, 120, 135, -45, -60, -75, -90, -105, -120, -135];
+      aircraft.heading = M.normalize(target + crossingAngles[Math.floor(Math.random() * crossingAngles.length)]);
+    }
+    aircraftPosition = {...CENTER};
+    waypointPosition = M.point(target, radius);
+    trackHistory = [];
+    radarElapsed = 0;
     questionSeconds = 0;
     latestResult = null;
     phase = 'aim'; paused = false;
@@ -247,12 +279,30 @@
     if ($('results-dialog').open) $('results-dialog').close();
     nextTarget(); renderStats();
   }
-  function tick() {
+  function updateRadarPosition(elapsed, allowUpdate) {
+    if (!activeConfig.moving) return;
+    radarElapsed += elapsed;
+    const steps = Math.floor((radarElapsed + 1e-9) / RADAR_INTERVAL);
+    if (!allowUpdate || steps === 0) return;
+    // Retain the last three actual returns, even after a delayed timer callback.
+    for (let step = Math.max(0, steps - 3); step < steps; step++) {
+      trackHistory.push(M.move(aircraftPosition, aircraft.heading, aircraft.speed, step * RADAR_INTERVAL, UNITS_PER_NM));
+    }
+    trackHistory = trackHistory.slice(-3);
+    aircraftPosition = M.move(aircraftPosition, aircraft.heading, aircraft.speed, steps * RADAR_INTERVAL, UNITS_PER_NM);
+    radarElapsed = Math.max(0, radarElapsed - steps * RADAR_INTERVAL);
+    target = M.answerHeading(aircraftPosition, waypointPosition);
+    radius = Math.hypot(waypointPosition.x - aircraftPosition.x, waypointPosition.y - aircraftPosition.y);
+    renderRadar();
+  }
+  function tick(allowMotion = true) {
     const now = performance.now();
     if (phase === 'aim' && !paused) {
       const dt = Math.max(0, (now - lastTick) / 1000);
       const elapsed = activeConfig.mode === 'timed' ? Math.min(dt, remaining) : dt;
       questionSeconds += elapsed;
+      const deadlineReached = activeConfig.mode === 'timed' && dt >= remaining;
+      updateRadarPosition(elapsed, allowMotion && !deadlineReached);
       if (activeConfig.mode === 'timed') {
         remaining = Math.max(0, remaining - dt);
         if (remaining <= 0) {
@@ -266,7 +316,8 @@
   }
   function grade(answer) {
     if (phase !== 'aim') return;
-    latestResult = {...M.assess(answer, target, activeConfig.tolerance), seconds: questionSeconds};
+    const currentTarget = activeConfig.moving ? M.answerHeading(aircraftPosition, waypointPosition) : target;
+    latestResult = {...M.assess(answer, currentTarget, activeConfig.tolerance), seconds: questionSeconds};
     records.push(latestResult);
     phase = 'review';
     if (answer !== null) $('heading-input').value = M.format(answer);
@@ -274,7 +325,8 @@
     if (matchMedia('(min-width: 781px)').matches) $('main-action').focus({preventScroll: true});
   }
   function submitAnswer() {
-    tick();
+    // Grade the last displayed radar return, never an unseen scan at keypress time.
+    tick(false);
     if (phase !== 'aim' || paused) return;
     const answer = M.parse($('heading-input').value);
     if (answer === null) {
@@ -293,7 +345,7 @@
   }
   function setPaused(value) {
     if (!isActive() || value === paused) return;
-    tick();
+    tick(false);
     paused = value;
     lastTick = performance.now();
     renderControls();
@@ -303,7 +355,7 @@
   }
   function finishSession() {
     if (!isActive()) return;
-    tick();
+    tick(false);
     const completed = {date: sessionDate, config: {...activeConfig}, records: [...records]};
     phase = 'finished'; paused = false;
     if (completed.records.length) {
@@ -316,7 +368,7 @@
     showSession(completed);
   }
   function configDescription(cfg) {
-    return `${cfg.rose ? 'Růžice ' + cfg.rose + '° ' + (cfg.showDegrees ? 's čísly' : 'bez čísel') : 'Bez růžice'} · cíle po ${cfg.step}° · tolerance ±${cfg.tolerance}° · ${cfg.mode === 'timed' ? 'test ' + cfg.duration + ' s' : 'volný trénink'}`;
+    return `${cfg.rose ? 'Růžice ' + cfg.rose + '° ' + (cfg.showDegrees ? 's čísly' : 'bez čísel') : 'Bez růžice'} · ${cfg.moving ? 'počáteční cíle' : 'cíle'} po ${cfg.step}° · tolerance ±${cfg.tolerance}° · ${cfg.mode === 'timed' ? 'test ' + cfg.duration + ' s' : 'volný trénink'}${cfg.moving ? ' · pohyb 2,5 s' : ''}`;
   }
   function showSession(session) {
     const summary = M.summarize(session.records);
@@ -347,6 +399,10 @@
     writeStorage(STORAGE_SETTINGS, settings);
     // Keep the ready-state example on the selected target grid as well.
     target = M.normalize(Math.round(target / settings.step) * settings.step);
+    aircraftPosition = {...CENTER};
+    waypointPosition = M.point(target, radius);
+    trackHistory = [];
+    radarElapsed = 0;
     renderSettings(); renderRadar();
   }
   document.querySelectorAll('[data-setting]').forEach(button => button.addEventListener('click', () => {
@@ -354,6 +410,7 @@
     updateSettings(key, key === 'mode' ? button.dataset.value : Number(button.dataset.value));
   }));
   $('rose-numbers').addEventListener('change', event => updateSettings('showDegrees', event.target.checked));
+  $('moving-aircraft').addEventListener('change', event => updateSettings('moving', event.target.checked));
   $('tolerance').addEventListener('input', event => updateSettings('tolerance', Number(event.target.value)));
   $('duration').addEventListener('change', event => updateSettings('duration', Number(event.target.value)));
   $('heading-input').addEventListener('input', event => {

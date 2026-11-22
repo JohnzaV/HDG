@@ -21,6 +21,15 @@
     const angle = normalize(heading) * Math.PI / 180;
     return {x: center.x + radius * Math.sin(angle), y: center.y - radius * Math.cos(angle)};
   }
+  function bearing(from, to) {
+    return normalize(Math.atan2(to.x - from.x, from.y - to.y) * 180 / Math.PI);
+  }
+  function move(position, heading, groundSpeed, seconds, unitsPerNm = 25) {
+    return point(heading, groundSpeed * seconds / 3600 * unitsPerNm, position);
+  }
+  function answerHeading(from, to) {
+    return normalize(Math.round(bearing(from, to)));
+  }
   function assess(answer, target, tolerance) {
     if (answer === null) return {answer: null, target, delta: null, error: null, hit: false};
     const delta = difference(answer, target);
@@ -37,7 +46,7 @@
       meanTime: answered.length ? answered.reduce((sum, record) => sum + record.seconds, 0) / answered.length : null
     };
   }
-  const api = {normalize, format, difference, parse, pickHeading, point, assess, summarize};
+  const api = {normalize, format, difference, parse, pickHeading, point, bearing, move, answerHeading, assess, summarize};
   root.HeadingMath = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

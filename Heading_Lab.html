@@ -17,6 +17,7 @@
 @media(max-width:560px){.workspace{padding:3px 12px 0}.app-header{padding:0 15px;height:73px}.utc{display:none}.metrics{margin:0 2px 16px}.metric{padding-left:11px}.metric>span{font-size:7px;letter-spacing:.2px;white-space:nowrap;margin-bottom:8px}.metric strong{font-size:22px}.metric strong em{font-size:12px}.metric small{font-size:10px}.scope-title{gap:4px}.scope-title .toolbar-divider,.scope-title>span:last-child{display:none}.scope-note{font-size:7px;letter-spacing:.5px}.scope-note span{font-size:6px}.radar-toolbar{min-height:36px;padding:7px 10px}.radar-actions{font-size:8px;gap:8px}.small-button{font-size:9px;padding:4px 7px}.radar-footer{font-size:7px;gap:12px;padding:8px 10px}.control-column{display:block}.settings-panel{margin-top:15px;padding:21px}.command-panel{padding:22px}.command-panel h1{max-width:none;font-size:24px;margin:18px 0 9px}.task-copy{margin-bottom:15px}.heading-field{min-height:70px}.heading-field input{font-size:43px;letter-spacing:7px}.keypad button{height:43px}.keypad{gap:6px}.setting-label{font-size:12px}.setting-label>span{font-size:10px}.segments button{font-size:12px;padding:12px 4px}.segments button small{font-size:10px}.mode-segments button{font-size:11px}.scope-legend{font-size:7px;gap:12px;bottom:10px}.scope-legend i{width:14px}.scope-legend span{gap:5px}.feedback-values{gap:45px}.app-footer{font-size:8px;padding:17px 15px;letter-spacing:.5px}.app-footer>span:nth-child(2){font-size:10px}.modal{padding:22px}.modal h2{font-size:25px}.result-table{font-size:10px}.result-table td,.result-table th{padding:9px 3px}.recent-bar{gap:8px}.answer-chip{padding:4px;font-size:9px}.recent-bar>span{font-size:7px}#recent-answers{gap:4px}.recent-bar .text-button{font-size:10px}#recent-answers>.muted{font-size:9px}.recent-bar>span{margin-right:0}.pause-overlay h2{font-size:21px}.pause-overlay p{font-size:10px}}
 @media(max-width:560px){#rose text{font-size:25px}#waypoint text{font-size:25px}#aircraft text{font-size:23px}#aircraft text:nth-last-child(2){font-size:20px}#aircraft text:last-child{font-size:17px}}
 .rose-numbers-toggle{display:flex;align-items:center;justify-content:space-between;margin-top:13px;color:var(--muted);font-size:11px;cursor:pointer}.switch-control{position:relative;display:inline-block;width:32px;height:18px;flex-shrink:0}.switch-control input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;margin:0;z-index:1}.switch-track{display:block;width:100%;height:100%;border:1px solid #52636e;border-radius:12px;background:#293640}.switch-track:after{content:"";position:absolute;top:4px;left:4px;width:10px;height:10px;border-radius:50%;background:#a1b1bd;transition:transform .15s}.switch-control input:checked+.switch-track{background:#3b5740;border-color:var(--green)}.switch-control input:checked+.switch-track:after{transform:translateX(14px);background:var(--green)}.switch-control input:focus-visible+.switch-track{outline:2px solid var(--cyan);outline-offset:4px}.rose-numbers-toggle:has(input:disabled){cursor:default}
+.motion-setting .rose-numbers-toggle{font-size:12px}.motion-note{font-size:12px;color:var(--muted);line-height:1.5;margin:7px 0 0}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 
 </style>
@@ -43,8 +44,8 @@
         <div class="radar-toolbar"><div class="scope-title"><span class="status-dot"></span> SECTOR <b>TRAINING</b><span class="toolbar-divider"></span><span>NORTH UP</span></div><div class="radar-actions"><span id="phase-badge">PŘIPRAVENO</span><button id="pause-button" class="small-button" disabled>Pauza</button></div></div>
         <div class="time-track"><div id="time-fill"></div></div>
         <div class="scope" id="scope">
-          <div class="scope-note">HDG TRAINING<span>BEZ VĚTRU</span></div>
-          <svg id="radar" viewBox="0 0 900 760" role="img" aria-label="Radarový obraz. Letadlo uprostřed a cílový waypoint.">
+          <div class="scope-note">HDG TRAINING<span>BEZ VĚTRU</span><span id="motion-indicator" hidden>RADAR 2,5 S · VNĚJŠÍ KRUH 10 NM</span></div>
+          <svg id="radar" viewBox="0 0 900 760" role="img" aria-label="Radarový obraz. Letadlo a cílový waypoint.">
             <defs>
               <pattern id="radar-grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M50 0H0V50" fill="none" stroke="#26333d" stroke-width=".6"/></pattern>
             </defs>
@@ -89,6 +90,7 @@
         <fieldset id="settings-fields">
           <legend class="sr-only">Nastavení pro další cvičení</legend>
           <div class="setting"><div class="setting-label">Růžice <span>Vizuální nápověda</span></div><div class="segments" role="group" aria-label="Obtížnost růžice"><button data-setting="rose" data-value="30" aria-pressed="false">Easy<small>po 30°</small></button><button data-setting="rose" data-value="90" aria-pressed="true">Medium<small>po 90°</small></button><button data-setting="rose" data-value="0" aria-pressed="false">Hard<small>bez růžice</small></button></div><label class="rose-numbers-toggle"><span>Čísla stupňů</span><span class="switch-control"><input id="rose-numbers" type="checkbox" aria-label="Zobrazit čísla stupňů"><span class="switch-track" aria-hidden="true"></span></span></label></div>
+          <div class="setting motion-setting"><label class="rose-numbers-toggle"><span>Pohyb letadla</span><span class="switch-control"><input id="moving-aircraft" type="checkbox" aria-label="Pohyb letadla"><span class="switch-track" aria-hidden="true"></span></span></label><p class="motion-note">Radarový krok po 2,5 s podle GS.</p><p class="motion-note">Při pohybu platí krok cílů pro začátek; aktuální heading se zaokrouhluje na 1°.</p></div>
           <div class="setting"><div class="setting-label">Krok cílů <span>Nezávislý na růžici</span></div><div class="segments" role="group" aria-label="Jemnost cílů"><button data-setting="step" data-value="30" aria-pressed="false">Easy<small>30°</small></button><button data-setting="step" data-value="15" aria-pressed="true">Medium<small>15°</small></button><button data-setting="step" data-value="5" aria-pressed="false">Hard<small>5°</small></button></div></div>
           <div class="setting tolerance-setting"><label class="setting-label" for="tolerance">Tolerance zásahu <output id="tolerance-output" for="tolerance">±5°</output></label><input id="tolerance" type="range" min="0" max="15" step="1" value="5"><div class="range-labels"><span>Přesně · 0°</span><span>±15°</span></div></div>
           <div class="setting"><div class="setting-label">Režim <span>Rozbor vždy bez limitu</span></div><div class="segments mode-segments" role="group" aria-label="Herní režim"><button data-setting="mode" data-value="practice" aria-pressed="true">Volný trénink</button><button data-setting="mode" data-value="timed" aria-pressed="false">Test na čas</button></div><div id="duration-setting" hidden><label for="duration">Čas na odpovídání</label><select id="duration"><option value="60">60 sekund</option><option value="120" selected>120 sekund</option><option value="180">180 sekund</option></select></div></div>
@@ -97,9 +99,9 @@
       </section>
     </aside>
   </main>
-  <footer class="app-footer"><span>HEADING LAB <b>1.2</b></span><span>Odhadni. Zadej. Zkontroluj.</span><span>OSOBNÍ TRÉNINK</span></footer>
+  <footer class="app-footer"><span>HEADING LAB <b>1.3</b></span><span>Odhadni. Zadej. Zkontroluj.</span><span>OSOBNÍ TRÉNINK</span></footer>
 
-  <dialog id="help-dialog" class="modal"><div class="modal-heading"><span class="panel-eyebrow">BRIEFING</span><button class="icon-button close-dialog" aria-label="Zavřít nápovědu">×</button></div><h2>Odhad headingu.<br>V radarovém prostředí.</h2><p>Letadlo je vždy uprostřed, sever je nahoře. Tvým úkolem je určit heading od letadla k zelenému waypointu. Počítáme s bezvětřím: heading se shoduje se směrem k bodu.</p><ol><li>Nastav si zvlášť <b>růžici</b>, <b>krok cílů</b> a <b>toleranci</b>.</li><li>Zadej kurz <b>000–360°</b> a stiskni <b>Enter</b>. Sever můžeš zadat jako 000 i 360.</li><li>Porovnej zelenou spojnici s červeným směrem své odpovědi. Dalším Enterem pokračuj.</li></ol><p>V testu na čas ubíhá limit jen při odpovídání. Během rozboru, pauzy a po přepnutí do jiné karty se zastaví. Nezodpovězený cíl při vypršení času je chyba.</p><div class="help-colors"><span class="cyan">□ letadlo a jeho aktuální vektor</span><span class="green">△ cílový waypoint</span></div><p class="muted small-copy">Waypointy a letová data jsou cvičné. Vektor letadla znázorňuje jeho současný směr; hledáš nový heading k waypointu.</p></dialog>
+  <dialog id="help-dialog" class="modal"><div class="modal-heading"><span class="panel-eyebrow">BRIEFING</span><button class="icon-button close-dialog" aria-label="Zavřít nápovědu">×</button></div><h2>Odhad headingu.<br>V radarovém prostředí.</h2><p>Na začátku je letadlo uprostřed, sever je nahoře. Tvým úkolem je určit heading od letadla k zelenému waypointu. Počítáme s bezvětřím: heading se shoduje se směrem k bodu.</p><ol><li>Nastav si zvlášť <b>růžici</b>, <b>krok cílů</b> a <b>toleranci</b>.</li><li>Zadej kurz <b>000–360°</b> a stiskni <b>Enter</b>. Sever můžeš zadat jako 000 i 360.</li><li>Porovnej zelenou spojnici s červeným směrem své odpovědi. Dalším Enterem pokračuj.</li></ol><p>Volba <b>Pohyb letadla</b> zapne radarové kroky po 2,5 s podle GS v labelu. Waypoint zůstává na místě, růžice sleduje letadlo. Krok cílů určuje výchozí směr; aktuální heading se při pohybu zaokrouhluje na celé stupně. Hodnotí se poloha z posledního zobrazeného radarového kroku při odeslání odpovědi. Pohyb se při pauze i rozboru zastaví.</p><p>V testu na čas ubíhá limit jen při odpovídání. Během rozboru, pauzy a po přepnutí do jiné karty se zastaví. Nezodpovězený cíl při vypršení času je chyba.</p><div class="help-colors"><span class="cyan">□ letadlo a jeho aktuální vektor</span><span class="green">△ cílový waypoint</span></div><p class="muted small-copy">Waypointy a letová data jsou cvičné. Vektor letadla znázorňuje jeho současný směr; hledáš nový heading k waypointu.</p></dialog>
   <dialog id="results-dialog" class="modal results-modal"><div class="modal-heading"><span class="panel-eyebrow" id="results-eyebrow">DEBRIEFING</span><button class="icon-button close-dialog" aria-label="Zavřít výsledky">×</button></div><h2 id="results-title">Hotovo pro dnešek.</h2><div id="results-content"></div></dialog>
 <script>
 /* Heading math shared by the app and its Node tests. No browser dependencies. */
@@ -125,6 +127,15 @@
     const angle = normalize(heading) * Math.PI / 180;
     return {x: center.x + radius * Math.sin(angle), y: center.y - radius * Math.cos(angle)};
   }
+  function bearing(from, to) {
+    return normalize(Math.atan2(to.x - from.x, from.y - to.y) * 180 / Math.PI);
+  }
+  function move(position, heading, groundSpeed, seconds, unitsPerNm = 25) {
+    return point(heading, groundSpeed * seconds / 3600 * unitsPerNm, position);
+  }
+  function answerHeading(from, to) {
+    return normalize(Math.round(bearing(from, to)));
+  }
   function assess(answer, target, tolerance) {
     if (answer === null) return {answer: null, target, delta: null, error: null, hit: false};
     const delta = difference(answer, target);
@@ -141,7 +152,7 @@
       meanTime: answered.length ? answered.reduce((sum, record) => sum + record.seconds, 0) / answered.length : null
     };
   }
-  const api = {normalize, format, difference, parse, pickHeading, point, assess, summarize};
+  const api = {normalize, format, difference, parse, pickHeading, point, bearing, move, answerHeading, assess, summarize};
   root.HeadingMath = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
@@ -156,7 +167,9 @@
   const NS = 'http://www.w3.org/2000/svg';
   const COLORS = {green: '#b5db8b', cyan: '#95d8e0', red: '#fb8f91', muted: '#9bb0bd'};
   const CENTER = {x: 450, y: 380};
-  const DEFAULT = {rose: 90, showDegrees: false, step: 15, tolerance: 5, mode: 'practice', duration: 120};
+  const DEFAULT = {rose: 90, showDegrees: false, moving: false, step: 15, tolerance: 5, mode: 'practice', duration: 120};
+  const RADAR_INTERVAL = 2.5;
+  const UNITS_PER_NM = 25;
   const STORAGE_SETTINGS = 'heading-lab.settings.v1';
   const STORAGE_HISTORY = 'heading-lab.history.v1';
   const FIXES = ['LUMEN', 'VEXOR', 'NOKTA', 'RAVIK', 'MAVEN', 'TOLIX', 'NERVO', 'BEXAL', 'ROMIK', 'KAVEN', 'VILOR', 'DOMEX'];
@@ -181,6 +194,7 @@
     return {
       rose: [0, 30, 90].includes(source.rose) ? source.rose : DEFAULT.rose,
       showDegrees: typeof source.showDegrees === 'boolean' ? source.showDegrees : fallbackShowDegrees,
+      moving: source.moving === true,
       step: [5, 15, 30].includes(source.step) ? source.step : DEFAULT.step,
       tolerance: Number.isInteger(source.tolerance) && source.tolerance >= 0 && source.tolerance <= 15 ? source.tolerance : DEFAULT.tolerance,
       mode: source.mode === 'timed' ? 'timed' : 'practice',
@@ -207,6 +221,10 @@
   let radius = 245;
   let fixIndex = 0;
   let aircraft = {...AIRCRAFT[0], heading: 90};
+  let aircraftPosition = {...CENTER};
+  let waypointPosition = M.point(target, radius);
+  let trackHistory = [];
+  let radarElapsed = 0;
   let questionSeconds = 0;
   let remaining = settings.duration;
   let lastTick = performance.now();
@@ -234,6 +252,7 @@
   }
   function renderRose() {
     const parent = $('rose');
+    parent.setAttribute('transform', `translate(${aircraftPosition.x - CENTER.x} ${aircraftPosition.y - CENTER.y})`);
     parent.replaceChildren();
     const step = currentConfig().rose;
     if (!step) return;
@@ -247,26 +266,30 @@
   function renderAircraft() {
     const parent = $('aircraft');
     parent.replaceChildren();
-    const p = M.point(target, radius);
-    const side = p.x >= CENTER.x ? -1 : 1;
-    const vertical = p.y >= CENTER.y ? -1 : 1;
+    const p = waypointPosition;
+    const side = p.x >= aircraftPosition.x ? -1 : 1;
+    const vertical = p.y >= aircraftPosition.y ? -1 : 1;
     const anchor = side === 1 ? 'start' : 'end';
-    const labelX = CENTER.x + side * 54;
-    const labelY = CENTER.y + vertical * 58;
-    for (const r of [20, 34, 48]) {
-      const ghost = M.point(aircraft.heading + 180, r);
-      parent.append(svgElement('circle', {cx: ghost.x, cy: ghost.y, r: 2.2, fill: COLORS.cyan, opacity: 1 - r / 65}));
+    const labelX = aircraftPosition.x + side * 54;
+    const labelY = aircraftPosition.y + vertical * 58;
+    if (currentConfig().moving) {
+      trackHistory.forEach((ghost, index) => parent.append(svgElement('circle', {cx: ghost.x, cy: ghost.y, r: 2.2, fill: COLORS.cyan, opacity: .25 + index * .2})));
+    } else {
+      for (const r of [20, 34, 48]) {
+        const ghost = M.point(aircraft.heading + 180, r, aircraftPosition);
+        parent.append(svgElement('circle', {cx: ghost.x, cy: ghost.y, r: 2.2, fill: COLORS.cyan, opacity: 1 - r / 65}));
+      }
     }
-    line(parent, CENTER, M.point(aircraft.heading, 48), {stroke: COLORS.cyan, 'stroke-width': 1.8, opacity: .85});
-    parent.append(svgElement('path', {d: `M450 380 L${450 + side * 30} ${380 + vertical * 35} H${labelX}`, fill: 'none', stroke: COLORS.cyan, 'stroke-width': 1.1, opacity: .7}));
-    parent.append(svgElement('rect', {x: 445, y: 375, width: 10, height: 10, fill: '#19252e', stroke: COLORS.cyan, 'stroke-width': 1.8}));
+    line(parent, aircraftPosition, M.point(aircraft.heading, 48, aircraftPosition), {stroke: COLORS.cyan, 'stroke-width': 1.8, opacity: .85});
+    parent.append(svgElement('path', {d: `M${aircraftPosition.x} ${aircraftPosition.y} L${aircraftPosition.x + side * 30} ${aircraftPosition.y + vertical * 35} H${labelX}`, fill: 'none', stroke: COLORS.cyan, 'stroke-width': 1.1, opacity: .7}));
+    parent.append(svgElement('rect', {x: aircraftPosition.x - 5, y: aircraftPosition.y - 5, width: 10, height: 10, fill: '#19252e', stroke: COLORS.cyan, 'stroke-width': 1.8}));
     label(parent, {x: labelX, y: labelY}, aircraft.call, {fill: COLORS.cyan, 'text-anchor': anchor, 'font-size': 20});
     label(parent, {x: labelX, y: labelY + 24}, `${aircraft.level}  ${aircraft.speed}`, {fill: COLORS.cyan, 'text-anchor': anchor, 'font-size': 17});
     label(parent, {x: labelX, y: labelY + 47}, `${aircraft.type}  H${M.format(aircraft.heading)}`, {fill: '#779ba7', 'text-anchor': anchor, 'font-size': 14});
   }
   function renderWaypoint() {
     const parent = $('waypoint');
-    const p = M.point(target, radius);
+    const p = waypointPosition;
     parent.replaceChildren();
     parent.append(svgElement('path', {d: `M${p.x} ${p.y - 9} l8 14 h-16 Z`, fill: '#19252e', stroke: COLORS.green, 'stroke-width': 1.8}));
     const right = p.x < 700;
@@ -278,29 +301,40 @@
     $('scope-legend').hidden = phase !== 'review';
     if (phase !== 'review' || !latestResult) return;
     const result = latestResult;
+    const actualBearing = M.bearing(aircraftPosition, waypointPosition);
     if (result.answer !== null) {
-      const userPoint = M.point(result.answer, radius + 17);
-      line(parent, CENTER, userPoint, {stroke: COLORS.red, 'stroke-width': 2, 'stroke-dasharray': '8 6'});
+      const userPoint = M.point(result.answer, radius + 17, aircraftPosition);
+      line(parent, aircraftPosition, userPoint, {stroke: COLORS.red, 'stroke-width': 2, 'stroke-dasharray': '8 6'});
       if (result.error >= 12) {
-        const pos = M.point(result.answer, radius + 41);
+        const pos = M.point(result.answer, radius + 41, aircraftPosition);
         label(parent, pos, `${M.format(result.answer)}°`, {fill: COLORS.red, 'font-size': 17});
       }
       if (result.error > 0) {
-        const start = M.point(target, 68);
-        const end = M.point(result.answer, 68);
-        parent.append(svgElement('path', {d: `M450 380 L${start.x} ${start.y} A68 68 0 0 ${result.delta >= 0 ? 1 : 0} ${end.x} ${end.y} Z`, fill: '#fb8f911c', stroke: 'none'}));
-        parent.append(svgElement('path', {d: `M${start.x} ${start.y} A68 68 0 0 ${result.delta >= 0 ? 1 : 0} ${end.x} ${end.y}`, fill: 'none', stroke: COLORS.red, 'stroke-width': 1.2, opacity: .75}));
+        const start = M.point(actualBearing, 68, aircraftPosition);
+        const end = M.point(result.answer, 68, aircraftPosition);
+        const sweep = M.difference(result.answer, actualBearing) >= 0 ? 1 : 0;
+        parent.append(svgElement('path', {d: `M${aircraftPosition.x} ${aircraftPosition.y} L${start.x} ${start.y} A68 68 0 0 ${sweep} ${end.x} ${end.y} Z`, fill: '#fb8f911c', stroke: 'none'}));
+        parent.append(svgElement('path', {d: `M${start.x} ${start.y} A68 68 0 0 ${sweep} ${end.x} ${end.y}`, fill: 'none', stroke: COLORS.red, 'stroke-width': 1.2, opacity: .75}));
       }
     }
-    line(parent, CENTER, M.point(target, radius - 12), {stroke: COLORS.green, 'stroke-width': 2});
-    const labelPosition = M.point(target, radius * .69);
-    label(parent, {x: labelPosition.x + 13, y: labelPosition.y - 13}, `${M.format(target)}°`, {fill: COLORS.green, 'font-size': 18, 'text-anchor': 'start', stroke: '#19252e', 'stroke-width': 5, 'paint-order': 'stroke fill'});
+    line(parent, aircraftPosition, M.point(actualBearing, Math.max(0, radius - 12), aircraftPosition), {stroke: COLORS.green, 'stroke-width': 2});
+    const labelPosition = M.point(actualBearing, radius * .69, aircraftPosition);
+    label(parent, {x: labelPosition.x + 13, y: labelPosition.y - 13}, `${M.format(result.target)}°`, {fill: COLORS.green, 'font-size': 18, 'text-anchor': 'start', stroke: '#19252e', 'stroke-width': 5, 'paint-order': 'stroke fill'});
     $('user-legend').hidden = result.answer === null;
     $('user-legend').innerHTML = `<i class="user-line"></i>${result.error === 0 ? 'Tvůj heading · shodný' : 'Tvůj heading'}`;
   }
   function renderRadar() {
     renderRose(); renderSolution(); renderWaypoint(); renderAircraft();
     const cfg = currentConfig();
+    $('range-rings').setAttribute('transform', `translate(${aircraftPosition.x - CENTER.x} ${aircraftPosition.y - CENTER.y})`);
+    $('motion-indicator').hidden = !cfg.moving;
+    // Only expand the viewport when needed, keeping the whole moving rose visible.
+    const extent = cfg.rose ? 355 : 270;
+    const left = Math.min(0, aircraftPosition.x - extent, waypointPosition.x - 100);
+    const top = Math.min(0, aircraftPosition.y - extent, waypointPosition.y - 40);
+    const right = Math.max(900, aircraftPosition.x + extent, waypointPosition.x + 100);
+    const bottom = Math.max(760, aircraftPosition.y + extent, waypointPosition.y + 40);
+    $('radar').setAttribute('viewBox', `${left} ${top} ${right - left} ${bottom - top}`);
     $('config-rose').textContent = cfg.rose ? `RŮŽICE ${cfg.rose}°` : 'BEZ RŮŽICE';
     $('config-step').textContent = `CÍLE PO ${cfg.step}°`;
     $('config-tolerance').textContent = `TOLERANCE ±${cfg.tolerance}°`;
@@ -312,6 +346,7 @@
       button.setAttribute('aria-pressed', String(selected));
     });
     $('rose-numbers').checked = settings.showDegrees;
+    $('moving-aircraft').checked = settings.moving;
     $('tolerance').value = settings.tolerance;
     $('tolerance-output').textContent = `±${settings.tolerance}°`;
     $('duration').value = settings.duration;
@@ -379,6 +414,14 @@
     radius = 211 + Math.random() * 43;
     fixIndex = (fixIndex + 1 + Math.floor(Math.random() * (FIXES.length - 1))) % FIXES.length;
     aircraft = {...AIRCRAFT[Math.floor(Math.random() * AIRCRAFT.length)], heading: Math.floor(Math.random() * 72) * 5};
+    if (activeConfig.moving) {
+      const crossingAngles = [45, 60, 75, 90, 105, 120, 135, -45, -60, -75, -90, -105, -120, -135];
+      aircraft.heading = M.normalize(target + crossingAngles[Math.floor(Math.random() * crossingAngles.length)]);
+    }
+    aircraftPosition = {...CENTER};
+    waypointPosition = M.point(target, radius);
+    trackHistory = [];
+    radarElapsed = 0;
     questionSeconds = 0;
     latestResult = null;
     phase = 'aim'; paused = false;
@@ -397,12 +440,30 @@
     if ($('results-dialog').open) $('results-dialog').close();
     nextTarget(); renderStats();
   }
-  function tick() {
+  function updateRadarPosition(elapsed, allowUpdate) {
+    if (!activeConfig.moving) return;
+    radarElapsed += elapsed;
+    const steps = Math.floor((radarElapsed + 1e-9) / RADAR_INTERVAL);
+    if (!allowUpdate || steps === 0) return;
+    // Retain the last three actual returns, even after a delayed timer callback.
+    for (let step = Math.max(0, steps - 3); step < steps; step++) {
+      trackHistory.push(M.move(aircraftPosition, aircraft.heading, aircraft.speed, step * RADAR_INTERVAL, UNITS_PER_NM));
+    }
+    trackHistory = trackHistory.slice(-3);
+    aircraftPosition = M.move(aircraftPosition, aircraft.heading, aircraft.speed, steps * RADAR_INTERVAL, UNITS_PER_NM);
+    radarElapsed = Math.max(0, radarElapsed - steps * RADAR_INTERVAL);
+    target = M.answerHeading(aircraftPosition, waypointPosition);
+    radius = Math.hypot(waypointPosition.x - aircraftPosition.x, waypointPosition.y - aircraftPosition.y);
+    renderRadar();
+  }
+  function tick(allowMotion = true) {
     const now = performance.now();
     if (phase === 'aim' && !paused) {
       const dt = Math.max(0, (now - lastTick) / 1000);
       const elapsed = activeConfig.mode === 'timed' ? Math.min(dt, remaining) : dt;
       questionSeconds += elapsed;
+      const deadlineReached = activeConfig.mode === 'timed' && dt >= remaining;
+      updateRadarPosition(elapsed, allowMotion && !deadlineReached);
       if (activeConfig.mode === 'timed') {
         remaining = Math.max(0, remaining - dt);
         if (remaining <= 0) {
@@ -416,7 +477,8 @@
   }
   function grade(answer) {
     if (phase !== 'aim') return;
-    latestResult = {...M.assess(answer, target, activeConfig.tolerance), seconds: questionSeconds};
+    const currentTarget = activeConfig.moving ? M.answerHeading(aircraftPosition, waypointPosition) : target;
+    latestResult = {...M.assess(answer, currentTarget, activeConfig.tolerance), seconds: questionSeconds};
     records.push(latestResult);
     phase = 'review';
     if (answer !== null) $('heading-input').value = M.format(answer);
@@ -424,7 +486,8 @@
     if (matchMedia('(min-width: 781px)').matches) $('main-action').focus({preventScroll: true});
   }
   function submitAnswer() {
-    tick();
+    // Grade the last displayed radar return, never an unseen scan at keypress time.
+    tick(false);
     if (phase !== 'aim' || paused) return;
     const answer = M.parse($('heading-input').value);
     if (answer === null) {
@@ -443,7 +506,7 @@
   }
   function setPaused(value) {
     if (!isActive() || value === paused) return;
-    tick();
+    tick(false);
     paused = value;
     lastTick = performance.now();
     renderControls();
@@ -453,7 +516,7 @@
   }
   function finishSession() {
     if (!isActive()) return;
-    tick();
+    tick(false);
     const completed = {date: sessionDate, config: {...activeConfig}, records: [...records]};
     phase = 'finished'; paused = false;
     if (completed.records.length) {
@@ -466,7 +529,7 @@
     showSession(completed);
   }
   function configDescription(cfg) {
-    return `${cfg.rose ? 'Růžice ' + cfg.rose + '° ' + (cfg.showDegrees ? 's čísly' : 'bez čísel') : 'Bez růžice'} · cíle po ${cfg.step}° · tolerance ±${cfg.tolerance}° · ${cfg.mode === 'timed' ? 'test ' + cfg.duration + ' s' : 'volný trénink'}`;
+    return `${cfg.rose ? 'Růžice ' + cfg.rose + '° ' + (cfg.showDegrees ? 's čísly' : 'bez čísel') : 'Bez růžice'} · ${cfg.moving ? 'počáteční cíle' : 'cíle'} po ${cfg.step}° · tolerance ±${cfg.tolerance}° · ${cfg.mode === 'timed' ? 'test ' + cfg.duration + ' s' : 'volný trénink'}${cfg.moving ? ' · pohyb 2,5 s' : ''}`;
   }
   function showSession(session) {
     const summary = M.summarize(session.records);
@@ -497,6 +560,10 @@
     writeStorage(STORAGE_SETTINGS, settings);
     // Keep the ready-state example on the selected target grid as well.
     target = M.normalize(Math.round(target / settings.step) * settings.step);
+    aircraftPosition = {...CENTER};
+    waypointPosition = M.point(target, radius);
+    trackHistory = [];
+    radarElapsed = 0;
     renderSettings(); renderRadar();
   }
   document.querySelectorAll('[data-setting]').forEach(button => button.addEventListener('click', () => {
@@ -504,6 +571,7 @@
     updateSettings(key, key === 'mode' ? button.dataset.value : Number(button.dataset.value));
   }));
   $('rose-numbers').addEventListener('change', event => updateSettings('showDegrees', event.target.checked));
+  $('moving-aircraft').addEventListener('change', event => updateSettings('moving', event.target.checked));
   $('tolerance').addEventListener('input', event => updateSettings('tolerance', Number(event.target.value)));
   $('duration').addEventListener('change', event => updateSettings('duration', Number(event.target.value)));
   $('heading-input').addEventListener('input', event => {
